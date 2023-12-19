@@ -1,0 +1,4 @@
+.env.dev
+config/
+.venv/
+__pycache__/
