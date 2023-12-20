@@ -29,6 +29,9 @@ class ActivityViewSet(viewsets.ModelViewSet):
             return Response(course_response, status=status.HTTP_404_NOT_FOUND)
         elif course.status_code == 500:
             return Response({'error': 'Team Management Server is down.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        request.data['course'] = course_response['id']
+        serializer = self.get_serializer(data=request.data)
 
         if request.data.get('service') == 'teknoplat':
             meeting_data = {
@@ -47,12 +50,18 @@ class ActivityViewSet(viewsets.ModelViewSet):
                 return Response(meeting_response, status=status.HTTP_400_BAD_REQUEST)
             elif meeting.status_code == 500:
                 return Response({'error': 'Teknoplat Server is down.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            if serializer.is_valid():
+                serializer.save()
+                new_activity = serializer.data
+                new_activity['meeting'] = meeting_response['id']
 
-        request.data['course'] = course_response['id']
-
-        serializer = self.get_serializer(data=request.data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(new_activity, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.data.get('service') == 'team':
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'Service not found.'}, status=status.HTTP_404_NOT_FOUND)
