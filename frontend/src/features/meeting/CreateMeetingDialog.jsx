@@ -128,7 +128,7 @@ const CreateMeetingDialog = (props) => {
                             },
                             "&::-webkit-scrollbar-thumb": {
                                 backgroundColor: (theme) => theme.palette.primary.main,
-                                borderRadius: "3px",
+                                borderRadius: "2.5px",
                             },
                             "&::-webkit-scrollbar-track": {
                                 backgroundColor: (theme) => theme.palette.background.paper,
