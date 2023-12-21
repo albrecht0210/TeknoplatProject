@@ -107,12 +107,73 @@ export const addMeetingCriteria = async (meetingId, payload) => {
     return response;
 }
 
-export const fetchMeetingsByCourse = async () => {
+export const addMeetingComment = async (meetingId, payload) => {
+    const data = {
+        account: payload.account,
+        comment: payload.comment
+    }
+    const response = await axios.post(`/api/meetings/${meetingId}/add_meeting_comment/`, data);
+    return response;
+}
 
+export const fetchMeetingsByCourseAndStatus = async (courseId, status, limit = 5, offset = 0) => {
+    const response = await axios.get(`/api/meetings/?limit=${limit}&offset=${offset}&course=${courseId}&status=${status}`);
+    return response;
 }
 
 export const fetchMeeting = async (meetingId) => {
     const response = await axios.get(`/api/meetings/${meetingId}/`);
+    return response;
+}
+
+export const updateMeetingStatusAndVideoId = async (meeting, videoId) => {
+    const data = {
+        ...meeting,
+        status: "in_progress",
+        video: videoId.meetingId
+    };
+    const response = await axios.put(`/api/meetings/${meeting.id}/`, data);
+    return response;
+}
+
+export const fetchMeetingOverallRatings = async (meetingId) => {
+    const response = await axios.get(`/api/meeting/ratings/?meeting=${meetingId}`);
+    return response;
+}
+
+export const fetchMeetingFeedbacks = async (meetingId) => {
+    const response = await axios.get(`/api/feedbacks/?meeting=${meetingId}`);
+    return response;
+}
+
+export const generateVideoId = async (videoAccessToken) => {
+    const data = {
+        token: videoAccessToken
+    };
+    const response = await axios.post(`/api/video/create-meeting/`, data);
+    return response;
+}
+
+export const validateVideoId = async (videoAccessToken, videoId) => {
+    const data = {
+        token: videoAccessToken
+    };
+    const response = await axios.post(`/api/video/validate-meeting/${videoId}/`, data);
+    return response;
+}
+
+export const fetchChatbotThread = async (account) => {
+    const response = await axios.get(`/api/chatbots/?account=${account}`);
+    return response;
+}
+
+export const addNewChatToChatbot = async (chatbotId, payload) => {
+    const data = {
+        chatbot: chatbotId,
+        role: "user",
+        content: payload.content
+    }
+    const response = await axios.post(`/api/chatbots/${chatbotId}/add_new_content/`, data);
     return response;
 }
 
