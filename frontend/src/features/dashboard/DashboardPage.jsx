@@ -8,7 +8,7 @@ export const DashboardPage = () => {
     const handleCourseClick = (course) => {
         localStorage.setItem("course", course.id);
         localStorage.setItem("course_link_name", `${course.name} (${course.section})`);
-        const url = `/courses/${course.id}/meetings/`;
+        const url = `/courses/${course.id}/meetings/in_progress/`;
         navigate(url);
     }
 
