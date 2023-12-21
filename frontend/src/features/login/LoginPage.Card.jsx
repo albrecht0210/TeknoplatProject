@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, Stack, Typography } from "@mui/material";
 import LoginButton from "./LoginButton";
 
-const LoginCard = () => {
+const LoginPageCard = () => {
     const submit = useSubmit();
 
     const [formData, setFormData] = useState({
@@ -22,8 +22,9 @@ const LoginCard = () => {
     }
 
     const handleSubmit = (e) => {
+        e.preventDefault();
         setLoading(true);
-        submit(formData);
+        submit();
     }
 
     return (
@@ -77,4 +78,4 @@ const LoginCard = () => {
     );
 }
 
-export default LoginCard;
+export default LoginPageCard;

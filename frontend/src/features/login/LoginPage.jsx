@@ -6,8 +6,9 @@ import { generateTokensApi } from "../../services/wildcat_server";
 import { authenticateVideoSDKApi } from "../../services/teknoplat_server";
 import { useSnackbar } from "notistack";
 import { useEffect } from "react";
+import LoginPageCard from "./LoginPage.Card";
 
-export async function loginAction({ request, params }) {
+export async function action({ request, params }) {
     const formData = await request.formData();
     const username = formData.get("username");
     const password = formData.get("password");
@@ -69,11 +70,9 @@ export const LoginPage = () => {
                         height: "calc(100vh - 64px)"
                     }}
                 >
-                    <LoginCard errors={errors} />
+                    <LoginPageCard errors={errors} />
                 </Box>
             </Box>
         </Box>
     );
 }
-
-export default LoginPage;
