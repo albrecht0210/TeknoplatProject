@@ -13,7 +13,7 @@ class Comment(models.Model):
 
     comment = models.TextField()
 
-    team = models.PositiveBigIntegerField(null=True, blank=True)
+    team = models.CharField(max_length=100, null=True, blank=True)
     all_team = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True) 
