@@ -9,19 +9,15 @@ class CreateMeetingSerializer(serializers.ModelSerializer):
         fields = ('name', 'description', 'course', 'status', 'owner')
 
 class MeetingCriteriaSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField()
-    meeting = serializers.SerializerMethodField()
-    description = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField(read_only=True)
+    description = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = MeetingCriteria
-        fields = ('id', 'meeting', 'name', 'description', 'weight', 'criteria')
+        fields = ('id', 'name', 'description', 'weight', 'criteria')
 
     def get_name(self, obj):
         return obj.criteria.name
-    
-    def get_meeting(self, obj):
-        return obj.meeting.name
     
     def get_description(self, obj):
         return obj.criteria.description
@@ -36,7 +32,7 @@ class MeetingSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
     def get_presentors(self, obj):
-        return PitchSerializer(obj.presentors, many=True).data
+        return PitchSerializer(obj.presentors, many=True, context=self.context).data
     
     def get_comments(self, obj):
         return CommentSerializer(obj.comments, many=True).data

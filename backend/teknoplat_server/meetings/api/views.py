@@ -118,7 +118,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def add_meeting_comment(self, request, pk=None):
-        meeting = self.get_object()  # Get the Meeting instance
+        meeting = self.get_object() 
 
         if meeting is None:
             return Response({'error': 'Meeting not found.'}, status=status.HTTP_404_NOT_FOUND)
