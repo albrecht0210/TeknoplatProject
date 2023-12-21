@@ -1,6 +1,6 @@
 import json
 
-from rest_framework import generics, permissions, status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
@@ -23,31 +23,19 @@ class PitchViewSet(viewsets.ModelViewSet):
 
         return queryset
     
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        offset_param = self.request.query_params.get('offset')
-        limit_param = self.request.query_params.get('limit')
+    # def list(self, request, *args, **kwargs):
+    #     queryset = self.get_queryset()
+    #     offset_param = self.request.query_params.get('offset')
+    #     limit_param = self.request.query_params.get('limit')
         
-        data = queryset
-        if offset_param and limit_param:
-            data = self.paginate_queryset(queryset)
+    #     data = queryset
+    #     if offset_param and limit_param:
+    #         data = self.paginate_queryset(queryset)
 
-        serializer = self.get_serializer(data, many=True)
-        data_content = serializer.data
-
-        for pitch in data_content:
-            team = fetch_team(pitch['team'])
-            team_response = json.loads(team.content.decode('utf-8'))
-
-            if team.status_code == 404:
-                return Response(team_response, status=status.HTTP_404_NOT_FOUND)
-            elif team.status_code == 500:
-                return Response({'error': 'Team Management Server is down.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            pitch['team'] = team
+    #     serializer = self.get_serializer(data, many=True)
+    #     data_content = serializer.data
         
-        return self.get_paginated_response(data_content) if (offset_param and limit_param) else Response(data_content, status=status.HTTP_200_OK)
-
+    #     return self.get_paginated_response(data_content) if (offset_param and limit_param) else Response(data_content, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         team_name = request.data.pop('team_name')
