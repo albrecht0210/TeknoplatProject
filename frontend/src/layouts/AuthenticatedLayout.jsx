@@ -7,7 +7,7 @@ export async function loader({ request, params }) {
     try {
         const profileResponse = await fetchProfileApi();
         const coursesResponse = await fetchAccountCourses();
-
+        localStorage.setItem("account", profileResponse.data.id);
         return {
             profile: profileResponse.data,
             courses: coursesResponse.data
