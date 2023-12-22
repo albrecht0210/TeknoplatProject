@@ -1,3 +1,4 @@
+import VideoPageVideoViewParticipantPanelParticipant from "./VideoPage.VideoView.ParticipantPanel.Participant";
 
 export async function loader({ request, params }) {
 }
@@ -6,11 +7,11 @@ export async function action({ request, params }) {
 }
 
 function VideoPageVideoViewParticipantPanel() {
-    const { profile, course, participants } = useOutletContext();
+    const { profile, course, participants, host } = useOutletContext();
 
     const inMeeting = participants.map((participant) => course.members.find((member) => member.id === participant));
     const notInMeeting = course.members.filter((member) => !inMeeting.find((meetingMember) => member.id === meetingMember.id));
-
+    
     return (
         <Paper sx={{ height: "calc(100vh - 72px - 48px - 24px)", width: "calc(100vw * 0.25)" }}>
             <List 
@@ -38,63 +39,36 @@ function VideoPageVideoViewParticipantPanel() {
                     Teachers
                 </ListSubheader>
                 {inMeeting.filter((member) => member.role === "Teacher").map((teacher) => (
-                    <ListItem 
-                        key={teacher.id}
-                        disablePadding
-                        secondaryAction= {profile.role === "teacher" && (
-                            <Stack direction="row" spacing={1}>
-                                <IconButton aria-label="toggleMic" onClick={handleToggleParticipantMic}>
-                                    {micOn ? <Mic /> : <MicOff />}
-                                </IconButton>
-                                <IconButton aria-label="toggleVideo" onClick={handleToggleParticipantWebCam}>
-                                    {webcamOn ? <Videocam /> : <VideocamOff />}
-                                </IconButton>
-                            </Stack>
+                    <>
+                        {host === profile.id && (
+                            <VideoPageVideoViewParticipantPanelParticipant key={teacher.id} participant={teacher}/>
                         )}
-                    >
-                        <ListItemButton 
-                            disabled 
-                            sx={{ 
-                                opacity: "1 !important", 
-                                userSelect: "text", 
-                                cursor: "text !important", 
-                                pointerEvents: "auto" 
-                            }}
-                        >
-                            <ListItemText primary={teacher.full_name}/>
-                        </ListItemButton>
-                    </ListItem>
+                        {host !== profile.id && (
+                            <ListItem 
+                                key={teacher.id}
+                                disablePadding
+                            >
+                                <ListItemButton 
+                                    disabled 
+                                    sx={{ 
+                                        opacity: "1 !important", 
+                                        userSelect: "text", 
+                                        cursor: "text !important", 
+                                        pointerEvents: "auto" 
+                                    }}
+                                >
+                                    <ListItemText primary={teacher.full_name}/>
+                                </ListItemButton>
+                            </ListItem>
+                        )}
+                        
+                    </>
                 ))}
                 <ListSubheader sx={{ backgroundColor: "inherit" }}>
                     Students
                 </ListSubheader>
                 {inMeeting.filter((member) => member.role === "Student").map((student) => (
-                    <ListItem 
-                        key={student.id}
-                        disablePadding
-                        secondaryAction= {profile.role === "teacher" && (
-                            <Stack direction="row" spacing={1}>
-                                <IconButton aria-label="toggleMic" onClick={handleToggleParticipantMic}>
-                                    {micOn ? <Mic /> : <MicOff />}
-                                </IconButton>
-                                <IconButton aria-label="toggleVideo" onClick={handleToggleParticipantWebCam}>
-                                    {webcamOn ? <Videocam /> : <VideocamOff />}
-                                </IconButton>
-                            </Stack>
-                        )}
-                    >
-                        <ListItemButton 
-                            disabled 
-                            sx={{ 
-                                opacity: "1 !important", 
-                                userSelect: "text", 
-                                cursor: "text !important", 
-                                pointerEvents: "auto" 
-                            }}
-                        >
-                            <ListItemText primary={student.full_name}/>
-                        </ListItemButton>
-                    </ListItem>
+                    <VideoPageVideoViewParticipantPanelParticipant key={student.id} participant={student}/>
                 ))}
                 <ListSubheader sx={{ backgroundColor: "inherit" }}>
                     Not In Meeting

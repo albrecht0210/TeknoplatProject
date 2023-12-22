@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { MeetingProvider } from "@videosdk.live/react-sdk";
 import { fetchMeeting } from "../../services/teknoplat_server";
-import { redirect, useOutletContext } from "react-router-dom";
+import { redirect, useLoaderData, useOutletContext } from "react-router-dom";
 import Cookies from "js-cookie";
 
 export async function loader({ request, params }) {
@@ -17,8 +17,6 @@ export async function loader({ request, params }) {
         return { 
             meeting: meeting,
             videoAccessToken: Cookies.get("videoAccessToken"),
-            mic: localStorage.getItem("openMic"),
-            webcam: localStorage.getItem("openWebcam")
         }
     } catch (error) {
         return redirect("/");
@@ -26,15 +24,15 @@ export async function loader({ request, params }) {
 }
 
 function VideoPage() {
-    const data = useOutletContext();
-
+    const data = useLoaderData();
+    const { profile } = useOutletContext();
     return (
         <Box height="100vh">
             <MeetingProvider
                 config={{
                     meetingId: data.meeting.video,
-                    micEnabled: data.mic === "true",
-                    webcamEnabled: data.webcam === "true",
+                    micEnabled: data.meeting.owner === profile.id,
+                    webcamEnabled: data.meeting.owner === profile.id,
                     name: profile.full_name,
                     participantId: profile.id,
                 }}
