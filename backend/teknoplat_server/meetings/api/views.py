@@ -23,7 +23,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
     pagination_class = LimitOffsetPagination
     serializer_class = MeetingSerializer
-    permission_classes = (permissions.IsAuthenticated, IsStaffOrReadOnly, )
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get_queryset(self):
         queryset = self.queryset
@@ -127,6 +127,9 @@ class MeetingViewSet(viewsets.ModelViewSet):
 
         if comment_serializer.is_valid(): 
             comment_serializer.save()
+            meeting.comments.add(comment_serializer.data['id'])
+            meeting.save()
+
             return Response(comment_serializer.data, status=status.HTTP_201_CREATED)
         return Response(comment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

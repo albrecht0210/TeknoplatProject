@@ -73,14 +73,8 @@ class AccountTeamAPIView(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated, )
 
     def get_queryset(self):
-        try:
-            queryset = Team.objects.filter(members__in=[self.request.user])
-
-            if not queryset.exists():
-                raise Team.DoesNotExist
-            return queryset
-        except Team.DoesNotExist:
-            return Response({'error', 'User does not have a team.'}, status=status.HTTP_404_NOT_FOUND)
+        queryset = Team.objects.filter(members__in=[self.request.user])
+        return queryset
         
 class TeamValidateAPIView(views.APIView):
     permission_classes = (permissions.IsAuthenticated, IsStaffOrReadOnly, )

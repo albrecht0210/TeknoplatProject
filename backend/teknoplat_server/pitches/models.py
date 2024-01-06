@@ -9,7 +9,8 @@ class Pitch(models.Model):
     description = models.TextField()
 
     team = models.CharField(max_length=100)
-    
+    course = models.CharField(max_length=100, blank=True, null=True)
+
     open_rate = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True) 

@@ -21,4 +21,3 @@ class PitchSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'Team Management Server is down.'})
 
         return team_response
-

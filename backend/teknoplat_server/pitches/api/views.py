@@ -17,10 +17,14 @@ class PitchViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
         team_params = self.request.query_params.get('team', None)
+        course_params = self.request.query_params.get('course', None)
 
         if team_params:
             queryset = queryset.filter(team=team_params)
 
+        if course_params:
+            queryset = queryset.filter(course=course_params)
+            
         return queryset
     
     # def list(self, request, *args, **kwargs):
@@ -50,6 +54,7 @@ class PitchViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Team Management Server is down.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         request.data['team'] = team_response['id']
+        request.data['course'] =team_response['course']
 
         serializer = self.get_serializer(data=request.data)
         

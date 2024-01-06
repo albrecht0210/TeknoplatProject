@@ -15,7 +15,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ('id', 'full_name', 'username', 'email', 'first_name', 'last_name', 'role', 'choose_role')
+        fields = ('id', 'full_name', 'username', 'email', 'first_name', 'avatar', 'last_name', 'role', 'choose_role')
 
     def create(self, validated_data):
         choose_role = validated_data.pop('choose_role', None)
