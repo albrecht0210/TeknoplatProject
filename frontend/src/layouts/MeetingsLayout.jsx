@@ -1,39 +1,33 @@
-import { Box, Button, Divider, Stack, TextField } from "@mui/material";
-import { Outlet, useLoaderData } from "react-router-dom";
-import TabContainer from "../components/tabcontainer/TabContainer";
-import { fetchTeamsByCourse } from "../services/team_server";
-import { fetchAllCriterias, fetchPitchByTeam } from "../services/teknoplat_server";
+import { Box, Button, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Await, defer, useLoaderData, useOutletContext } from "react-router-dom";
+import { fetchAllCriterias, fetchPitchesByCourse } from "../services/teknoplat_server";
 import CreateMeetingDialog from "../features/meeting/CreateMeetingDialog";
+import { Suspense,  useState } from "react";
 
 export async function loader({ request, params }) {
     const courseId = params.courseId;
     try {
-        const teamResponse = await fetchTeamsByCourse(courseId);
-        const teams = teamResponse.data;
+        const pitchesReponses = fetchPitchesByCourse(courseId);;
     
-        const pitchesReponses = await Promise.all(teams.map(async (team) => await fetchPitchByTeam(team.id)));
-        const pitches = pitchesReponses.map((response) => response.data[0]);
+        const criteriaResponse = fetchAllCriterias();
     
-        const criteriaResponse = await fetchAllCriterias();
-    
-        return { pitches: pitches, criterias: criteriaResponse.data };
+        return defer({ pitches: pitchesReponses, criterias: criteriaResponse });
     } catch (error) {
         return error.response.data;
     }
 }
 
-export const MeetingsLayout = () => {
-    const data = useLoaderData();
+export const Component = () => {
+    const { pitches, criterias } = useLoaderData();
     const { profile } = useOutletContext();
 
-    const tabOptions = [
-        { value: 0, name: "Pending", stringValue: "pending" },
-        { value: 1, name: "In Progress", stringValue: "in_progress" },
-        { value: 2, name: "Completed", stringValue: "completed" }
+    let tabOptions = [
+        { value: 0, name: "Pending" },
+        { value: 1, name: "In Progress" },
+        { value: 2, name: "Completed" }
     ];
 
-    const initTabValue = localStorage.getItem("statusTabValue") ? Number(localStorage.getItem("statusTabValue")) : 1;
-    const [statusTabValue, setStatusTabValue] = useState(initTabValue);
+    const [statusTabValue, setStatusTabValue] = useState(Number(localStorage.getItem("meetingsPageTabValue")) ?? 1);
     const [searchMeeting, setSearchMeeting] = useState("");
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
 
@@ -46,11 +40,8 @@ export const MeetingsLayout = () => {
     }
 
     const handleTabChange = (event, value) => {
-        const option = tabOptions.find((option) => option.value === value);
-        localStorage.setItem("statusTabValue", value);
+        localStorage.setItem("meetingsPageTabValue", value);
         setStatusTabValue(value);
-
-        navigate(urlPath[0].concat("meetings/".concat(option.stringValue)));
     }
 
     const handleSearchInput = (event) => {
@@ -59,38 +50,46 @@ export const MeetingsLayout = () => {
 
     return (
         <Box p={3}>
-            <Stack direction="row">
-                <TabContainer 
-                    tabOptions={tabOptions}
-                    handleChange={handleTabChange}
-                    selected={statusTabValue}
-                />
-                <Stack direction="row" spacing={2} alignItems="center" ml="auto">
-                    {profile.role === "Teacher" && <Button size="small" variant="contained" onClick={handleOpenCreateDialog}>Create</Button>}
-                    <TextField 
-                        id="searchMeetingName"
-                        name="searchMeetingName"
-                        value={searchMeeting}
-                        label="Search Meetings"
-                        onChange={handleSearchInput}
-                        autoComplete="off"
-                        variant="outlined"
-                        size="small"
-                    />
-                </Stack>
-                <Divider />
-            </Stack>
-            <Outlet context={{ search: searchMeeting }} />
-            <CreateMeetingDialog 
+            <Suspense fallback={<Box></Box>}>
+                <Await resolve={profile}>
+                    {(resolveProfile) => (
+                        <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <Tabs value={statusTabValue} onChange={handleTabChange} aria-label="Status Tabs with additional Data">
+                                {tabOptions.map((option) => (
+                                    <Tab key={option.value} id={`status-option-${option.value}`} label={option.name} aria-controls={`status-tabpanel-${option.value}`} />
+                                ))}
+                                {resolveProfile.data.role === "Student" && <Tab id={`status-option-3`} label="My Team" aria-controls={`status-tabpanel-3`} />}
+                                {resolveProfile.data.role === "Teacher" && <Tab id={`status-option-3`} label="Teams" aria-controls={`status-tabpanel-3`} />}
+                            </Tabs> 
+                            <Stack direction="row" spacing={2} alignItems="center" ml="auto">
+                                {resolveProfile.data.role === "Teacher" && <Button size="small" variant="contained" onClick={handleOpenCreateDialog}>Create</Button>}
+                                <TextField 
+                                    id="searchMeetingName"
+                                    name="searchMeetingName"
+                                    value={searchMeeting}
+                                    label="Search Meetings"
+                                    onChange={handleSearchInput}
+                                    autoComplete="off"
+                                    variant="outlined"
+                                    size="small"
+                                />
+                            </Stack>
+                        </Stack>
+                    )}
+                </Await>
+            </Suspense>
+            
+            {/* <Outlet context={{ search: searchMeeting }} /> */}
+            {/* <CreateMeetingDialog 
                 open={openCreateDialog} 
                 pitches={data.pitches}
                 teams={data.teams}
                 criterias={data.criterias}
                 profile={profile}
                 handleClose={handleCloseCreateDialog}
-            />
+            /> */}
         </Box>
     );
 }
 
-export default MeetingsLayout;
+Component.displayName = "MeetingsLayout";

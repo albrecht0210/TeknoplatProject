@@ -1,16 +1,26 @@
-import { Form, useSubmit } from "react-router-dom";
-import { useState } from "react";
-import { Card, CardContent, Stack, Typography } from "@mui/material";
-import LoginButton from "./LoginButton";
+import { Form } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Button, Card, CardContent, Stack, TextField, Typography } from "@mui/material";
 
-const LoginPageCard = () => {
-    const submit = useSubmit();
+const LoginPageCard = (props) => {
+    const { loading, loadingChange } = props;
+    const submitButtonRef = useRef(null);
 
     const [formData, setFormData] = useState({
         username: "",
         password: ""
     });
-    const [loading, setLoading] = useState(false);
+
+    const handleLoginClick = () => {
+        loadingChange();
+        submitButtonRef.current.click();
+        setTimeout(() => {
+            setFormData({
+                username: "",
+                password: ""
+            });
+        }, 1500);
+    }
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -21,10 +31,11 @@ const LoginPageCard = () => {
         }));
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setLoading(true);
-        submit();
+    const handleInputKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            handleLoginClick();
+        }
     }
 
     return (
@@ -36,7 +47,7 @@ const LoginPageCard = () => {
             }}
         >
             <CardContent sx={{ p: 3 }}>
-                <Form method="post" onSubmit={handleSubmit}>
+                <Form method="post">
                     <Stack spacing={3}>
                         <Typography
                             variant="h6"
@@ -50,6 +61,7 @@ const LoginPageCard = () => {
                             type="text"
                             value={formData.username}
                             onChange={handleInputChange}
+                            onKeyDown={handleInputKeyDown}
                             disabled={loading}
                             autoComplete="on"
                             variant="outlined"
@@ -60,17 +72,18 @@ const LoginPageCard = () => {
                             type="password"
                             value={formData.password}
                             onChange={handleInputChange}
+                            onKeyDown={handleInputKeyDown}
                             disabled={loading}
                             variant="outlined"
                         />
-                        <LoginButton disabled={loading} />
                         <Button
                             variant="contained"
-                            type="submit"
                             disabled={loading}
+                            onClick={handleLoginClick}
                         >
                             { loading ? "Logging In..." : "Login" }
                         </Button>
+                        <Button ref={submitButtonRef} type="submit" sx={{ display: "none" }} />
                     </Stack>
                 </Form>
             </CardContent>

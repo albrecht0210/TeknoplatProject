@@ -1,18 +1,19 @@
 import { createTheme } from "@mui/material";
+import { grey } from "@mui/material/colors";
 
-const mode = localStorage.getItem('theme') ? localStorage.getItem('theme') : 'dark';
+const mode = localStorage.getItem("theme") ? localStorage.getItem("theme") : "dark";
 
 const theme = createTheme({
     palette: {
-        mode: mode === 'dark' ? mode : 'light',
+        mode: mode === "dark" ? mode : "light",
         primary: {
-            main: '#f6b422'
+            main: "#f6b422"
         },
         secondary: {
-            main: '#a67128'
+            main: "#a67128"
         },
         text: {
-            primary: '#fff',
+            primary: "#fff",
             secondary: grey[500],
         }
     }

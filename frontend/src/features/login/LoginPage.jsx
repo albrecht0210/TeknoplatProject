@@ -1,11 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, redirect, useActionData } from "react-router-dom";
 import Cookies from "js-cookie";
 import Navbar from "../../components/navbar/Navbar";
 import { Box, Toolbar } from "@mui/material";
 import { generateTokensApi } from "../../services/wildcat_server";
 import { authenticateVideoSDKApi } from "../../services/teknoplat_server";
 import { useSnackbar } from "notistack";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LoginPageCard from "./LoginPage.Card";
 
 export async function action({ request, params }) {
@@ -15,12 +15,12 @@ export async function action({ request, params }) {
 
     const errors = {};
 
-    if (password === "") {
-        errors.password = "Password can't be blank.";
-    }
-
     if (username === "") {
         errors.username = "Username can't be blank.";
+    }
+
+    if (password === "") {
+        errors.password = "Password can't be blank.";
     }
 
     if (Object.keys(errors).length) {
@@ -36,25 +36,42 @@ export async function action({ request, params }) {
         Cookies.set("videoAccessToken", authVideoResponse.data);
         return redirect("/");
     } catch(error) {
-        return error.response.data;
+        if (error.response.status === 404) {
+            errors.error = "Try again later. Server is down.";
+        } else {
+            errors.error = error.response.data.detail;
+        }
+        return errors;
+        // return error.response.data;
     }
 }
 
-export const LoginPage = () => {
+export const Component = () => {
     const access = Cookies.get("accessToken");
     const errors = useActionData();
     const { enqueueSnackbar } = useSnackbar();
 
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         if (typeof errors === 'object') {
+            let count = 0;
             Object.keys(errors).forEach((key) => {
-                enqueueSnackbar(errors[key], { variant: 'error' });
+                setTimeout(() => {
+                    enqueueSnackbar(errors[key], { variant: 'error', autoHideDuration: 3000 });
+                }, 200 * count);
+                count++;
             });
+            setLoading(false);
         }
-    }, [errors]);
-
+    }, [errors, enqueueSnackbar]);
+    
     if (access) {
         return <Navigate to="/" />
+    }
+
+    const handleLoadingChange = () => {
+        setLoading(!loading);
     }
 
     return (
@@ -70,9 +87,11 @@ export const LoginPage = () => {
                         height: "calc(100vh - 64px)"
                     }}
                 >
-                    <LoginPageCard errors={errors} />
+                    <LoginPageCard errors={errors} loading={loading} loadingChange={handleLoadingChange} />
                 </Box>
             </Box>
         </Box>
     );
 }
+
+Component.displayName = "LoginPage";

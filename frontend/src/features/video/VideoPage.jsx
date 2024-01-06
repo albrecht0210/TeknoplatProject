@@ -1,46 +1,57 @@
 import { Box } from "@mui/material";
 import { MeetingProvider } from "@videosdk.live/react-sdk";
-import { fetchMeeting } from "../../services/teknoplat_server";
-import { redirect, useLoaderData, useOutletContext } from "react-router-dom";
+import { fetchAccountRatings, fetchAccountRemarks, fetchMeetingById, fetchProfileApi } from "../../services/teknoplat_server";
+import { redirect, useLoaderData } from "react-router-dom";
 import Cookies from "js-cookie";
+import { fetchCourseById } from "../../services/team_server";
+import VideoPageVideoView from "./VideoPage.VideoView";
 
 export async function loader({ request, params }) {
     const meetingId = params.meetingId;
     try {
-        const meetingResponse = await fetchMeeting(meetingId);
-        const meeting = meetingResponse.data;
+        const meetingResponse = await fetchMeetingById(meetingId);
+        const profileResponse = await fetchProfileApi();
+        const courseResponse = await fetchCourseById(meetingResponse.data.course);
 
-        if (meeting.status === "pending" || meeting.status === "completed") {
+        const ratingResponse = await fetchAccountRatings(meetingId);
+        const remarksResponse = await fetchAccountRemarks(meetingId);
+
+        if (meetingResponse.data.status === "pending" || meetingResponse.data.status === "completed") {
             return redirect("/");
         }
 
         return { 
-            meeting: meeting,
-            videoAccessToken: Cookies.get("videoAccessToken"),
+            meeting: meetingResponse.data,
+            profile: profileResponse.data,
+            course: courseResponse.data,
+            ratings: ratingResponse.data,
+            remarks: remarksResponse.data,
+            videoAccessToken: Cookies.get("videoAccessToken")
         }
     } catch (error) {
         return redirect("/");
     }
 }
 
-function VideoPage() {
-    const data = useLoaderData();
-    const { profile } = useOutletContext();
+export const Component = () => {
+    const {meeting, profile, videoAccessToken} = useLoaderData();
+
     return (
         <Box height="100vh">
             <MeetingProvider
                 config={{
-                    meetingId: data.meeting.video,
-                    micEnabled: data.meeting.owner === profile.id,
-                    webcamEnabled: data.meeting.owner === profile.id,
+                    meetingId: meeting.video,
+                    micEnabled: meeting.owner === profile.id,
+                    webcamEnabled: meeting.owner === profile.id,
                     name: profile.full_name,
                     participantId: profile.id,
                 }}
-                token={data.videoAccessToken}
+                token={videoAccessToken}
             >
+                <VideoPageVideoView />
             </MeetingProvider>
         </Box>
     );
 }
 
-export default VideoPage;
+// Component.displayName = "VideoPage";

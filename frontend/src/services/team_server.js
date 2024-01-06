@@ -60,8 +60,18 @@ export const fetchAccountCourses = async () => {
     return response;
 }
 
+export const fetchAccountTeams = async () => {
+    const response = await instance.get(`/api/account/profile/teams/`);
+    return response;
+}
+
 export const fetchTeamsByCourse = async (courseId) => {
     const response = await instance.get(`/api/teams/?course=${courseId}`);
+    return response;
+}
+
+export const fetchCourseById = async (courseId) => {
+    const response = await instance.get(`/api/courses/${courseId}`);
     return response;
 }
 

@@ -1,19 +1,17 @@
+import { useLoaderData } from "react-router-dom";
 import VideoPageVideoViewParticipantPanelParticipant from "./VideoPage.VideoView.ParticipantPanel.Participant";
-
-export async function loader({ request, params }) {
-}
-
-export async function action({ request, params }) {
-}
+import { useMeeting } from "@videosdk.live/react-sdk";
+import { List, ListItem, ListItemButton, ListItemText, ListSubheader, Paper } from "@mui/material";
 
 function VideoPageVideoViewParticipantPanel() {
-    const { profile, course, participants, host } = useOutletContext();
+    const { participants } = useMeeting();
+    const {meeting, course} = useLoaderData();
 
-    const inMeeting = participants.map((participant) => course.members.find((member) => member.id === participant));
+    const inMeeting = [...participants.keys()].map((participant) => course.members.find((member) => member.id === participant));
     const notInMeeting = course.members.filter((member) => !inMeeting.find((meetingMember) => member.id === meetingMember.id));
     
     return (
-        <Paper sx={{ height: "calc(100vh - 72px - 48px - 24px)", width: "calc(100vw * 0.25)" }}>
+        <Paper sx={{ height: "calc(100vh - 72px - 48px - 24px)", width: "360px" }}>
             <List 
                 sx={{ 
                     py: 0,
@@ -38,37 +36,18 @@ function VideoPageVideoViewParticipantPanel() {
                 <ListSubheader sx={{ backgroundColor: "inherit", position: "relative" }}>
                     Teachers
                 </ListSubheader>
-                {inMeeting.filter((member) => member.role === "Teacher").map((teacher) => (
-                    <>
-                        {host === profile.id && (
-                            <VideoPageVideoViewParticipantPanelParticipant key={teacher.id} participant={teacher}/>
-                        )}
-                        {host !== profile.id && (
-                            <ListItem 
-                                key={teacher.id}
-                                disablePadding
-                            >
-                                <ListItemButton 
-                                    disabled 
-                                    sx={{ 
-                                        opacity: "1 !important", 
-                                        userSelect: "text", 
-                                        cursor: "text !important", 
-                                        pointerEvents: "auto" 
-                                    }}
-                                >
-                                    <ListItemText primary={teacher.full_name}/>
-                                </ListItemButton>
-                            </ListItem>
-                        )}
-                        
-                    </>
-                ))}
+                {inMeeting.filter((member) => member.role === "Teacher").map((teacher) => {
+                    if (meeting.owner === teacher.id) {
+                        return <VideoPageVideoViewParticipantPanelParticipant key={teacher.id} participant={teacher} isNotHost={false} />
+                    } else {
+                        return <VideoPageVideoViewParticipantPanelParticipant key={teacher.id} participant={teacher} isNotHost={true} />
+                    }
+                })}
                 <ListSubheader sx={{ backgroundColor: "inherit" }}>
                     Students
                 </ListSubheader>
                 {inMeeting.filter((member) => member.role === "Student").map((student) => (
-                    <VideoPageVideoViewParticipantPanelParticipant key={student.id} participant={student}/>
+                    <VideoPageVideoViewParticipantPanelParticipant key={student.id} participant={student} isNotHost={true} />
                 ))}
                 <ListSubheader sx={{ backgroundColor: "inherit" }}>
                     Not In Meeting

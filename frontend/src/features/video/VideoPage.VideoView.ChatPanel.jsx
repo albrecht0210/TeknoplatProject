@@ -1,34 +1,19 @@
-import { Box, Paper } from "@mui/material";
-import { useLoaderData, useSubmit } from "react-router-dom";
+import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { useLoaderData } from "react-router-dom";
+import { addMeetingComment } from "../../services/teknoplat_server";
+import { Send } from "@mui/icons-material";
 
-export async function action({ request, params }) {
-    const formData = await request.formData();
-    const comment = formData.get("comment");
-    const account = formData.get("account");
-    const meetingId = params.meetingId;
-
-    try {
-        const commentResponse = await addMeetingComment(meetingId, { comment: comment, account: account });
-        return { comment: commentResponse.data };
-    } catch(error) {
-        return error.response.data;
-    }
-}
-
-function VideoPageVideoViewChatPanel(props) {
-    const { profile } = useOutletContext();
-    const { meetingId } = useParams();
-    const submit = useSubmit();
-    const data = useLoaderData();
-
+function VideoPageVideoViewChatPanel() {
+    const { profile, meeting } = useLoaderData();
     const scrollableBoxRef = useRef(null);
-
+    
     const [socket, setSocket] = useState(null);
     const [comment, setComment] = useState("");
-    const [commentLists, setCommentLists] = useState(data.comments);
+    const [commentLists, setCommentLists] = useState(meeting.comments);
 
     useEffect(() => {
-        const ws = new WebSocket(`${process.env.REACT_APP_TEKNOPLAT_WEBSOCKET_URL}/ws/comments/${meetingId}/`);
+        const ws = new WebSocket(`ws://127.0.0.1:8008/ws/comments/${meeting.id}/`);
 
         ws.onopen = () => {
             setSocket(ws);
@@ -50,23 +35,23 @@ function VideoPageVideoViewChatPanel(props) {
         return () => {
             ws.close();
         };
+        // eslint-disable-next-line 
     }, []);
 
     useEffect(() => {
         scrollableBoxRef.current.scrollTop = scrollableBoxRef.current.scrollHeight;
-    }, []);
+    }, [commentLists]);
 
     const handleCommentChange = (e) => {
         const { value } = e.target;
         setComment(value);
     }
-
-    const handleSubmit = async () => {
-        e.preventDefault();
-        submit();                
+    
+    const handleCommentClick = async (e) => {
+        const commentResponse = await addMeetingComment(meeting.id, { comment: comment, account: profile.id });
         if (socket) {
             socket.send(JSON.stringify({
-                'comment': data.comment
+                'comment': commentResponse.data
             }));
             scrollableBoxRef.current.scrollTop = scrollableBoxRef.current.scrollHeight;
         } else {
@@ -74,15 +59,14 @@ function VideoPageVideoViewChatPanel(props) {
         }
         setComment("");
     }
-
     return (
-        <Paper sx={{ height: "calc(100vh - 72px - 48px - 24px)", width: "calc(100vw * 0.25)" }}>
+        <Paper sx={{ height: "calc(100vh - 72px - 48px - 24px)", width: "360px" }}>
             <Box 
                 ref={scrollableBoxRef}
                 sx={{ 
                     height: "calc(100vh - 72px - 72px - 48px - 24px)", 
                     maxHeight: "calc(100vh - 72px - 72px - 48px - 24px)", 
-                    width: "calc(100vw * 0.25)",
+                    width: "360px",
                     px: 1,
                     py: 2,
                     overflowY: "hidden",
@@ -104,7 +88,16 @@ function VideoPageVideoViewChatPanel(props) {
             >
                 <Stack spacing={2}>
                     { commentLists.map((comment) => (
-                        <Paper key={comment.id} sx={{ backgroundColor: "black", width: "fit-content", maxWidth: "80%", p: 1, marginLeft: profile.full_name === comment.account_detail.full_name ? "auto !important" : "" }}>
+                        <Paper 
+                            key={comment.id} 
+                            sx={{ 
+                                backgroundColor: "black", 
+                                width: "fit-content",
+                                maxWidth: "80%", 
+                                p: 1, 
+                                marginLeft: profile.full_name === comment.account_detail.full_name ? "auto !important" : "",
+                            }}
+                        >
                             <Stack direction="row" spacing={1}>
                                 <img 
                                     src="/sample/default_avatar.png"
@@ -121,13 +114,11 @@ function VideoPageVideoViewChatPanel(props) {
                 </Stack>
             </Box>
             <Box sx={{ width: "100%", p: 2 }}>
-                <Form method="post" onSubmit={handleSubmit}>
-                    <Stack direction="row" spacing={1}>
-                        <TextField value={comment} name="comment" onChange={handleCommentChange} fullWidth size="small" label="Write a comment..." />
-                        <TextField value={profile.id} name="account" type="hidden" />
-                        <Button type="submit" size="small" variant="contained">Send</Button>
-                    </Stack>
-                </Form>
+                <Stack direction="row" spacing={1}>
+                    <TextField value={comment} name="comment" onChange={handleCommentChange} fullWidth size="small" label="Write a comment..." />
+                    <TextField value={profile.id} name="account" type="hidden" />
+                    <Button size="small" variant="contained" onClick={handleCommentClick}><Send /></Button>
+                </Stack>
             </Box>
         </Paper>
     );

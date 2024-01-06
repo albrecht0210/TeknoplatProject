@@ -1,17 +1,19 @@
 import { DarkMode, LightMode } from "@mui/icons-material";
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader } from "@mui/material";
-import { useState } from "react";
+import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { RootThemeContext } from "../../context/RootThemeContext";
 
 const ApplicationLinks = () => {
     const navigate = useNavigate();
     
-    const mode = localStorage.getItem('theme') ? localStorage.getItem("theme") : "dark";
+    const { darkMode, setDarkMode } = useContext(RootThemeContext);
 
-    const [darkMode, setDarkMode] = useState(mode === "dark" ? true : false);
-    
-    const handleToggleMode = () => {
+    useEffect(() => {
         localStorage.setItem("theme", darkMode ? "dark" : "light");
+    }, [darkMode]);
+    
+    const handleToggleThemeMode = () => {
         setDarkMode(!darkMode);
     }
 
@@ -30,7 +32,7 @@ const ApplicationLinks = () => {
                 </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-                <ListItemButton onClick={handleToggleMode}>
+                <ListItemButton onClick={handleToggleThemeMode}>
                     <ListItemIcon>
                         { darkMode ? <LightMode /> : <DarkMode /> }
                     </ListItemIcon>

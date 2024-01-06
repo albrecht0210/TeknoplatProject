@@ -2,6 +2,8 @@ import { useState } from "react";
 import ChatbotPageThread from "./ChatbotPage.Thread";
 import ChatbotPageSetting from "./ChatbotPage.Setting";
 import { addNewChatToChatbot, fetchChatbotThread } from "../../services/teknoplat_server";
+import { Box } from "@mui/material";
+import TabContainer from "../../components/tabcontainer/TabContainer";
 
 export async function loader({ request, params }) {
     const account = localStorage.getItem("account");
@@ -41,11 +43,12 @@ export const ChatbotPage = () => {
 
     return (
         <Box p={3}>
-            <TabContainer 
-                tabOptions={tabOptions}
-                handleChange={handleTabChange}
-                selected={tabValue}
-            />
+            <Tabs value={tabValue} onChange={handleTabChange} aria-label="action-tabs">
+                {tabOptions.map((option) => (
+                    <Tab key={option.value} id={`option-${option.value}`} label={option.name} aria-controls={`tabpanel-${option.value}`} />
+                ))}
+            </Tabs> 
+            <Divider />
             {tabValue === 0 && <ChatbotPageThread /> }
             {tabValue === 1 && <ChatbotPageSetting /> }
         </Box>

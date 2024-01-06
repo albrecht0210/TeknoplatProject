@@ -1,10 +1,14 @@
 import { Box, Divider, Drawer } from "@mui/material";
 import Logo from "../logo/Logo";
-import MainLinks from "./MainLinks";
-import ApplicationLinks from "./ApplicationLinks";
-import AccountButton from "./AccountButton";
+import MainLinks, { MainLinksSkeleton } from "./Sidebar.MainLinks";
+import ApplicationLinks from "./Sidebar.ApplicationLinks";
+import AccountButton from "./Sidebar.AccountButton";
+import { Suspense } from "react";
+import { Await, Navigate } from "react-router-dom";
 
-const Sidebar = () => {
+const Sidebar = (props) => {
+    const { courses } = props;
+
     return (
         <Box
             component="nav"
@@ -20,7 +24,11 @@ const Sidebar = () => {
             >
                 <Logo />
                 <Divider />
-                <MainLinks />
+                <Suspense fallback={<MainLinksSkeleton />}>
+                    <Await resolve={courses} errorElement={<Navigate to="/" />}>
+                        <MainLinks />
+                    </Await>
+                </Suspense>
                 <Divider />
                 <ApplicationLinks />
                 <Divider sx={{ mt: "auto" }} />

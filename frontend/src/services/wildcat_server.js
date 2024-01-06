@@ -55,7 +55,7 @@ instance.interceptors.response.use(
 );
 
 export const generateTokensApi = async (credentials) => {
-    const response = await instance.post(`/api/token/?service=${process.env.REACT_APP_TEKNOPLAT_SERVICE_TOKEN}`, credentials);
+    const response = await axios.post(`${process.env.REACT_APP_WILDCAT_BASE_URL}/api/token/?service=${process.env.REACT_APP_TEKNOPLAT_SERVICE_TOKEN}`, credentials);
     return response;
 }
 

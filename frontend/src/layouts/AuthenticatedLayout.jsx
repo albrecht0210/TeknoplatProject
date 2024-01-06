@@ -1,5 +1,4 @@
-import Cookies from "js-cookie";
-import { Outlet, useLoaderData } from "react-router-dom";
+import { Navigate, Outlet, useLoaderData } from "react-router-dom";
 import { fetchProfileApi } from "../services/teknoplat_server";
 import { fetchAccountCourses } from "../services/team_server";
 
@@ -13,15 +12,14 @@ export async function loader({ request, params }) {
             courses: coursesResponse.data
         };
     } catch (error) {
-        return error.response.data;
+        return { error: true };
     }
 }
 
-export const AuthenticatedLayout = () => {
+export const Component = () => {
     const data = useLoaderData();
-    const access = Cookies.get("accessToken");
 
-    if (!access) {
+    if (data.error) {
         return <Navigate to="/login" />
     }
 
@@ -29,3 +27,5 @@ export const AuthenticatedLayout = () => {
         <Outlet context={{ profile: data.profile, courses: data.courses }} />
     );
 }
+
+Component.dispayName = "AuthenticatedLayout";

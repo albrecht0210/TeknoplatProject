@@ -1,73 +1,77 @@
-import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
-import RootLayout from "./layouts/RootLayout";
-import ErrorPage from "./features/error/ErrorPage";
-import { action as loginAction } from "./features/login/LoginPage";
-import { action as meetingAction } from "./layouts/MeetingLayout";
-import { action as commentAction } from "./features/meeting/MeetingDetails.Comments";
-import { action as chatbotAction } from "./features/chatbot/ChatbotPage";
+import { Breadcrumbs, Link, Typography } from "@mui/material";
+import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
+// import { action as loginAction } from "./features/login/LoginPage";
+// import { action as meetingAction } from "./layouts/MeetingLayout";
+// import { action as commentAction } from "./features/meeting/MeetingDetails.Comments";
+// import { action as chatbotAction } from "./features/chatbot/ChatbotPage";
 
 const UrlPaths = () => {
     const routes = createRoutesFromElements(
-        <Route path="/" element={<RootLayout />} errorElement={<ErrorPage />}>
-            <Route path="/" lazy={() => import("./layouts/AuthenticatedLayout")} >
-                <Route path="/" lazy={() => import("./layouts/MainLayout")}>
-                    <Route 
-                        index 
-                        lazy={() => import("./features/dashboard/DashboardPage")}
-                        handle={{ crumb: () => <span>Dashboard</span> }} 
-                    />
-                    <Route
-                        path="/"
-                        lazy={() => import("./features/dashboard/DashboardPage")}
-                        handle={{ crumb: () => <span>Dashboard</span> }}
-                    />
-                    <Route 
-                        path="courses/" 
-                        lazy={() => import("./features/redirects/CoursesRedirects")}
-                    />
-                    <Route 
-                        path="courses/:courseId" 
-                        lazy={() => import("./features/redirects/CoursesRedirects")}
-                    />
-                    <Route 
-                        path="courses/:courseId/meetings/" 
-                        lazy={() => import("./layouts/MeetingsLayout")}
-                        handle={{ crumb: () => <span>{localStorage.getItem("course_link_name")}</span> }}
-                    >
-                        <Route 
-                            path=":status/"
-                            lazy={() => import("./features/meeting/MeetingList")}
-                        />
-                    </Route>
-                    <Route 
-                        path="courses/:courseId/meeting/" 
-                        lazy={() => import("./features/redirects/CoursesRedirects")}
-                    />
-                    <Route 
-                        path="courses/:courseId/meeting/:meetingId/"
-                        lazy={() => import("./layouts/MeetingLayout")}
-                        handle={{ crumb: () => <span>{localStorage.getItem("meeting_link_name")}</span> }}
-                        action={meetingAction}
-                    >
-                        <Route path="pitches/" lazy={() => import("./features/meeting/MeetingDetails.Pitches")} />
-                        <Route path="criterias/" lazy={() => import("./features/meeting/MeetingDetails.Criterias")} />
-                        <Route path="comments/" lazy={() => import("./features/meeting/MeetingDetails.Comments")} action={commentAction} />
-                    </Route>
-                    <Route 
-                        path="chatbot/" 
-                        lazy={() => import("./features/chatbot/ChatbotPage")} 
-                        action={chatbotAction}
-                    />
-                </Route>
-                <Route path="live/:meetingId/" />
-            </Route>
+        <Route 
+            id="rootLayout"
+            path="/"  
+            lazy={() => import("./layouts/RootLayout")}
+        >
             <Route 
+                id="sidebarLayout"
+                path="" 
+                lazy={() => import("./layouts/SidebarLayout")}
+            >
+                <Route 
+                    id="dashboardPageIndex"
+                    index 
+                    lazy={() => import("./features/dashboard/DashboardPage")}
+                    handle={{ crumb: () => (
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <Typography color="text.primary">Dashboard</Typography>
+                        </Breadcrumbs>
+                    )}} 
+                />
+                    <Route
+                    id="dashboardPage"
+                    path="dashboard"
+                    lazy={() => import("./features/dashboard/DashboardPage")}
+                    handle={{ crumb: (path) => (
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <Typography color="text.primary">Dashboard</Typography>
+                        </Breadcrumbs>
+                    )}} 
+                />
+                <Route 
+                    path="courses/:courseId/meetings/" 
+                    lazy={() => import("./features/meetings/MeetingsPage")}
+                    handle={{ crumb: (path) => (
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <Typography color="text.primary">{localStorage.getItem("course_link_name")}</Typography>
+                        </Breadcrumbs>
+                    )}} 
+                />
+                <Route 
+                    path="courses/:courseId/meetings/:meetingId/" 
+                    lazy={() => import("./features/meeting_details/MeetingDetailsPage")}
+                    handle={{ crumb: (path) => (
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <Link underline="hover" color="inherit" href={`/courses/${localStorage.getItem("course")}/meetings/`}>
+                                {localStorage.getItem("course_link_name")}
+                            </Link>
+                            <Typography color="text.primary">{localStorage.getItem("meeting_link_name")}</Typography>
+                        </Breadcrumbs>
+                    )}} 
+                />
+            </Route>
+            <Route path="live/:meetingId/" lazy={() => import("./features/video/VideoPage")} />
+            <Route path="live/:meetingId/leave/" lazy={() => import("./features/redirects/Redirects")} />
+            <Route 
+                id="login"
                 path="login" 
                 lazy={() => import("./features/login/LoginPage")}
-                action={loginAction} 
             />
         </Route>
     );
+
+    const router = createBrowserRouter(routes);
+
+    return <RouterProvider router={router} />;
 }
 
 export default UrlPaths;
