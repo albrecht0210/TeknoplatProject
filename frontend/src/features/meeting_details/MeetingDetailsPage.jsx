@@ -1,7 +1,7 @@
 import { Box, Button, Divider, Grid, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Form, defer, redirect, useLoaderData, useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { fetchMeetingById, validateVideoId} from "../../services/teknoplat_server";
+import { fetchMeetingById, fetchMeetingFeedbacks, fetchMeetingOverallRatings, generateVideoId, updateMeetingStatusAndVideoId, validateVideoId } from "../../services/teknoplat_server";
 import MeetingDetailsPageSkeleton from "./MeetingDetailsPage.Skeleton";
 import MeetingDetailsPageMembers from "./MeetingDetailsPage.Members";
 import MeetingDetailsPagePresentors from "./MeetingDetailsPage.Presentors";
@@ -15,16 +15,9 @@ export async function loader({ request, params }) {
 
     try {
         const meetingResponse = fetchMeetingById(meetingId);
-        // if (status === 2) {
-        //     const overallRatingResponse = await fetchMeetingOverallRatings(meetingId);
-        //     const feedbacksResponse = await fetchMeetingFeedbacks(meetingId);
-        //     return {
-        //         meeting: meetingResponse.data,
-        //         overallRating: overallRatingResponse.data,
-        //         feedbacks: feedbacksResponse.data
-        //     };
-        // }
-        return defer({ meeting: meetingResponse });
+        const overallRatingResponse = fetchMeetingOverallRatings(meetingId);
+        const feedbacksResponse = fetchMeetingFeedbacks(meetingId);
+        return defer({ meeting: meetingResponse, overallRating: overallRatingResponse, feedbacks: feedbacksResponse });
     } catch (error) {
         return redirect(`/courses/${courseId}/meetings/`);
     }
@@ -34,19 +27,19 @@ export async function action({ request, params }) {
     let formData = await request.formData();
     let intent = formData.get("intent");
 
-    // if (intent === "start") {
-    //     try {
-    //         const meetingResponse = await fetchMeeting();
-    //         const videoResponse = await createVideoID();
-    //         await updateMeetingStatusAndVideoId(meetingResponse.data, videoResponse.data);
-    //         await validateVideoID();
-    //         localStorage.setItem("videoId", videoResponse.data.meetingId);
-    //         return redirect(`/live/${params.meetingId}`);
-    //     } catch (error) {
-    //         console.log(error.response.data);
-    //         return error.response.data;
-    //     }
-    // }
+    if (intent === "start") {
+        try {
+            const meetingResponse = await fetchMeetingById(params.meetingId);
+            const videoResponse = await generateVideoId(Cookies.get("videoAccessToken"));
+            await updateMeetingStatusAndVideoId(meetingResponse.data, videoResponse.data);
+            await validateVideoID();
+            localStorage.setItem("videoId", videoResponse.data.meetingId);
+            return redirect(`/live/${params.meetingId}`);
+        } catch (error) {
+            console.log(error.response.data);
+            return error.response.data;
+        }
+    }
 
     if (intent === "join") {
         let video = formData.get("video");
@@ -69,8 +62,10 @@ export const Component = (props) => {
     const [meetingDetailsPageTabValue, setDetailsPageTabValue] = useState(Number(localStorage.getItem("meetingsDetailsageTabValue")) ?? 0);
     const [course, setCourse] = useState();
     const [meetingData, setMeetingData] = useState();
+    const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
     const [isDoneFetching, setIsDoneFetching] = useState(false);
-
+    const [isDoneMeetingFetching, setIsDoneMeetingFetching] = useState(false);
+    
     useEffect(() => {
         const resolveFetch = async () => {
             await Promise.all([courses, meeting]).then((data) => {
@@ -93,15 +88,31 @@ export const Component = (props) => {
         // eslint-disable-next-line
     }, []);
 
+    useEffect(() => {
+        
+    }, [meetingData]);
+
+    const handleHistoryDialog = async () => {
+        setOpenHistoryDialog(true);
+    }
+    
+    const handleHistoryDialogClose = () => {
+        setOpenHistoryDialog(false);
+    }
+    
     const handleTabChange = (event, value) => {
         localStorage.setItem("meetingsDetailsageTabValue", value);
         setDetailsPageTabValue(value);
     }
-
+    
     return (
         <Box p={3}>
             {isDoneFetching ? (
-                <MeetingDetailsPageInner course={course} profile={profile} meeting={meetingData} tabValue={meetingDetailsPageTabValue} tabChange={handleTabChange} />
+                <Box>
+                    <MeetingDetailsPageInner course={course} profile={profile} meeting={meetingData} tabValue={meetingDetailsPageTabValue} tabChange={handleTabChange} dialogOpenChange={handleHistoryDialog} />
+                    <Suspense fallBack={}
+                    <MeetingDetailsPageHistoryDialog open={openHistoryDialog}, handleClose={handleHistoryDialogClose}, meeting={meetingData}, pitches={}, feedbacks 
+                </Box>
             ) : (
                 <MeetingDetailsPageSkeleton />
             )}
@@ -112,7 +123,7 @@ export const Component = (props) => {
 Component.displayName = "MeetingDetailsPage";
 
 const MeetingDetailsPageInner = (props) => {
-    const { course, profile, meeting, tabValue, tabChange } = props;
+    const { course, profile, meeting, tabValue, tabChange, dialogOpenChange } = props;
     const tabOptions = [
         { value: 0, name: "Pitch", stringValue: "pitch" },
         { value: 1, name: "Criteria", stringValue: "criteria" },
@@ -137,7 +148,7 @@ const MeetingDetailsPageInner = (props) => {
                             </Form>
                         )}
                         { meeting.status === "completed" && (
-                            <Button variant="contained">View</Button>
+                            <Button variant="contained" onClick={dialogOpenChange}>View</Button>
                         )}
                     </Stack>
                     <Typography fontWeight={100} variant="h6">{ meeting.description }</Typography>
