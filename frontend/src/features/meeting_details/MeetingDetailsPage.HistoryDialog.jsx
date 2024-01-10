@@ -1,6 +1,5 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { useState } from "react";
-import TabContainer from "../../components/tab/TabContainer";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -11,11 +10,9 @@ import {
     Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { useOutletContext } from "react-router-dom";
+import { useAsyncValue, useOutletContext } from "react-router-dom";
 import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import Cookies from "js-cookie";
-import axios from "axios";
+import { getPitchRemarks } from "../../services/teknoplat_server";
 
 ChartJS.register(
     CategoryScale,
@@ -28,25 +25,27 @@ ChartJS.register(
 
 const MeetingDetailsPageHistoryDialog = (props) => {
     const { profile } = useOutletContext();
-    const { open, handleClose, meeting, pitches, feedbacks } = props;
+    const [pitchesReponses, feedbacksResponse] = useAsyncValue();
+    const { open, handleClose, meeting } = props;
+
+    const pitches = pitchesReponses.data;
+    const feedbacks = feedbacksResponse.data;
 
     let tabOptions = [
         { value: 0, name: "Overall" },
     ];
 
-    const tabPitchOptions = presentors.map((pitch, index) => { return {value: (index + 1), name: pitch.name }});
+    const tabPitchOptions = meeting.presentors.map((pitch, index) => { return {value: (index + 1), name: pitch.name }});
     tabOptions = tabOptions.concat(tabPitchOptions);
 
     const [dialogTabValue, setDialogTabValue] = useState(0);
   
     const handleTabChange = (event, value) => {
-        const option = tabOptions.find((option) => option.value === value);
-        console.log(option.stringValue);
         setDialogTabValue(value);
     }
 
     const handleExportClick = async () => {
-        const remarksResponse = await getPitchRemarks(meeting);
+        const remarksResponse = await getPitchRemarks(meeting.id);
 
         const jsonData = pitches.flatMap((pitch) => {
             return pitch.ratings.map(rating => {
@@ -77,11 +76,10 @@ const MeetingDetailsPageHistoryDialog = (props) => {
   
     return (
         <Dialog
-            sx={{ '& .MuiDialog-paper': { width: '80%', height: 500 } }}
+            sx={{ '& .MuiDialog-paper': { width: "calc(100vw * .5)", height: "calc(100vh * .7)" } }}
             maxWidth="sm"
             open={open}
             onClose={handleClose}
-            keepMounted={false}
         >
             <DialogTitle>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -89,8 +87,26 @@ const MeetingDetailsPageHistoryDialog = (props) => {
                     {profile.role === "Teacher" && <Button variant="contained" onClick={handleExportClick}>Export</Button>}
                 </Stack>
             </DialogTitle>
-            <DialogContent dividers>
-                <Tabs value={tabValue} onChange={tabChange} aria-label="action-tabs">
+            <DialogContent dividers
+                sx={{ 
+                    overflowY: "hidden",
+                    ":hover": {
+                        overflowY: "auto",
+                        scrollbarWidth: "thin",
+                        "&::-webkit-scrollbar": {
+                            width: "6px",
+                        },
+                        "&::-webkit-scrollbar-thumb": {
+                            backgroundColor: (theme) => theme.palette.primary.main,
+                            borderRadius: "2.5px",
+                        },
+                        "&::-webkit-scrollbar-track": {
+                            backgroundColor: (theme) => theme.palette.background.paper,
+                        },
+                    },
+                }}
+            >
+                <Tabs value={dialogTabValue} onChange={handleTabChange} aria-label="action-tabs">
                     {tabOptions.map((option) => (
                         <Tab key={option.value} id={`option-${option.value}`} label={option.name} aria-controls={`tabpanel-${option.value}`} />
                     ))}

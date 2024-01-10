@@ -66,6 +66,11 @@ const UrlPaths = () => {
                 path="login" 
                 lazy={() => import("./features/login/LoginPage")}
             />
+            <Route 
+                id="register"
+                path="register" 
+                lazy={() => import("./features/register/RegisterPage")}
+            />
         </Route>
     );
 

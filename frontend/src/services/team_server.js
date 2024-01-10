@@ -75,4 +75,19 @@ export const fetchCourseById = async (courseId) => {
     return response;
 }
 
+export const fetchAllCourses = async () => {
+    const response = await axios.get(`${process.env.REACT_APP_TEAM_BASE_URL}/api/public/course/list/`);
+    return response;
+}
+
+export const fetchTeamsByCoursePublic = async (courseId) => {
+    const response = await axios.get(`${process.env.REACT_APP_TEAM_BASE_URL}/api/public/team/list/?course=${courseId}`);
+    return response;
+}
+
+export const createTeam = async (payload) => {
+    const response = await axios.post(`${process.env.REACT_APP_TEAM_BASE_URL}/api/public/team/create/`, payload);
+    return response;
+}
+
 export default instance;

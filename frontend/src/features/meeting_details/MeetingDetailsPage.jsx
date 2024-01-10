@@ -1,6 +1,6 @@
 import { Box, Button, Divider, Grid, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
 import { Suspense, useEffect, useState } from "react";
-import { Form, defer, redirect, useLoaderData, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Await, Form, defer, redirect, useLoaderData, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { fetchMeetingById, fetchMeetingFeedbacks, fetchMeetingOverallRatings, generateVideoId, updateMeetingStatusAndVideoId, validateVideoId } from "../../services/teknoplat_server";
 import MeetingDetailsPageSkeleton from "./MeetingDetailsPage.Skeleton";
 import MeetingDetailsPageMembers from "./MeetingDetailsPage.Members";
@@ -8,6 +8,7 @@ import MeetingDetailsPagePresentors from "./MeetingDetailsPage.Presentors";
 import MeetingDetailsPageCriterias from "./MeetingDetailsPage.Criterias";
 import MeetingDetailsPageComments from "./MeetingDetailsPage.Comments";
 import Cookies from "js-cookie";
+import MeetingDetailsPageHistoryDialog from "./MeetingDetailsPage.HistoryDialog";
 
 export async function loader({ request, params }) {
     const courseId = params.courseId;
@@ -32,7 +33,7 @@ export async function action({ request, params }) {
             const meetingResponse = await fetchMeetingById(params.meetingId);
             const videoResponse = await generateVideoId(Cookies.get("videoAccessToken"));
             await updateMeetingStatusAndVideoId(meetingResponse.data, videoResponse.data);
-            await validateVideoID();
+            await validateVideoId();
             localStorage.setItem("videoId", videoResponse.data.meetingId);
             return redirect(`/live/${params.meetingId}`);
         } catch (error) {
@@ -55,7 +56,7 @@ export async function action({ request, params }) {
 
 export const Component = (props) => {
     const { profile, courses } = useOutletContext();
-    const { meeting } = useLoaderData();
+    const { meeting, overallRating, feedbacks } = useLoaderData();
     const { courseId } = useParams();
     const navigate = useNavigate();
 
@@ -64,7 +65,6 @@ export const Component = (props) => {
     const [meetingData, setMeetingData] = useState();
     const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
     const [isDoneFetching, setIsDoneFetching] = useState(false);
-    const [isDoneMeetingFetching, setIsDoneMeetingFetching] = useState(false);
     
     useEffect(() => {
         const resolveFetch = async () => {
@@ -110,8 +110,13 @@ export const Component = (props) => {
             {isDoneFetching ? (
                 <Box>
                     <MeetingDetailsPageInner course={course} profile={profile} meeting={meetingData} tabValue={meetingDetailsPageTabValue} tabChange={handleTabChange} dialogOpenChange={handleHistoryDialog} />
-                    <Suspense fallBack={}
-                    <MeetingDetailsPageHistoryDialog open={openHistoryDialog}, handleClose={handleHistoryDialogClose}, meeting={meetingData}, pitches={}, feedbacks 
+                    { meetingData.status.toLowerCase() === "completed" && (
+                        <Suspense fallBack={<Box/>}>
+                            <Await resolve={Promise.all([overallRating, feedbacks]).then(value => value)}>
+                                {openHistoryDialog && <MeetingDetailsPageHistoryDialog open={openHistoryDialog} handleClose={handleHistoryDialogClose} meeting={meetingData} />}
+                            </Await>
+                        </Suspense>
+                    )}
                 </Box>
             ) : (
                 <MeetingDetailsPageSkeleton />

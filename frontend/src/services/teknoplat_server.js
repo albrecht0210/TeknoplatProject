@@ -168,7 +168,7 @@ export const updateOpenPitchRate = async (pitch) => {
         open_rate: true
     }
 
-    const response = await instance.put(`http://localhost:8008/api/pitches/${pitch.id}/`, data);
+    const response = await instance.put(`/api/pitches/${pitch.id}/`, data);
     return response;
 }
 
@@ -181,7 +181,7 @@ export const addPitchRating = async (payload) => {
         criteria: payload.criteria,
     }
 
-    const response = await instance.post(`http://localhost:8008/api/ratings/`, data);
+    const response = await instance.post(`/api/ratings/`, data);
     return response;
 }
 
@@ -193,7 +193,12 @@ export const addPitchFeedback = async (payload) => {
         meeting: payload.meeting,
     }
 
-    const response = await instance.post(`http://localhost:8008/api/remarks/`, data);
+    const response = await instance.post(`/api/remarks/`, data);
+    return response;
+}
+
+export const getPitchRemarks = async (meetingId) => {
+    const response = await instance.get(`/api/meeting/remarks/?meeting=${meetingId}`);
     return response;
 }
 
