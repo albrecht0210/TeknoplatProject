@@ -90,3 +90,7 @@ class CourseValidateAPIView(views.APIView):
             return Response({ 'id': course.id }, status=status.HTTP_200_OK)
         except Course.DoesNotExist:
             return Response({'error': 'Course does not exists.'}, status=status.HTTP_404_NOT_FOUND)
+        
+class CourseListAPIView(generics.ListAPIView):
+    queryset= Course.objects.all()
+    serializer_class = CourseSerializer

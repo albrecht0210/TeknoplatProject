@@ -1,7 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CourseViewSet, AccountCourseListAPIView, AccountCourseRetrieveAPIView, CourseValidateAPIView
-
+from .views import CourseViewSet, AccountCourseListAPIView, AccountCourseRetrieveAPIView, CourseValidateAPIView, CourseListAPIView
 # Create a router for the CourseViewSet
 router = DefaultRouter()
 router.register(r'courses', CourseViewSet, basename='course')
@@ -16,4 +15,5 @@ urlpatterns = [
     path('account/profile/course/', AccountCourseRetrieveAPIView.as_view(), name='retrieve-course-by-account'),
     
     path('course/validate/', CourseValidateAPIView.as_view(), name='course-validate'),
+    path('public/course/list/', CourseListAPIView.as_view(), name='course-list'),
 ]

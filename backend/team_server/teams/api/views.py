@@ -56,7 +56,7 @@ class TeamViewSet(viewsets.ModelViewSet):
 
             if account in team_members:
                 return Response({'message': 'Member already added to the team.'}, status=status.HTTP_200_OK)
-
+    
             team.members.add(account)
             team.save()
 
@@ -87,3 +87,48 @@ class TeamValidateAPIView(views.APIView):
             return Response({ 'id': team.id }, status=status.HTTP_200_OK)
         except Course.DoesNotExist:
             return Response({'error': 'Team does not exists.'}, status=status.HTTP_404_NOT_FOUND)
+        
+class TeamListAPIView(generics.ListAPIView):
+    queryset= Team.objects.all()
+    serializer_class = TeamSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        course_param = self.request.query_params.get('course', None)
+
+        if course_param:
+            queryset = queryset.filter(course=course_param)
+
+        return queryset
+
+class TeamCreateAPIView(generics.CreateAPIView):
+    serializer_class = TeamSerializer
+
+    @action(detail=True, methods=['post'])
+    def add_team_member(self, request, pk=None):
+        team = self.get_object()
+        account_id = request.data.get('account')
+
+        if team is None:
+            return Response({'error': 'Team not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if account_id is None:
+            return Response({'error': 'Account username is missing from the request data.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Get Account
+            account = get_object_or_404(Account, pk=account_id)
+            # Get all members in team
+            team_members = team.members.all()
+
+            if len(team_members) == 3:
+                return Response({'error': 'Team is full.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+            team.members.add(account)
+            team.save()
+
+            return Response(AccountSerializer(account).data, status=status.HTTP_201_CREATED)
+        except Account.DoesNotExist:
+            return Response({'error': 'Account not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': 'An error occurred.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

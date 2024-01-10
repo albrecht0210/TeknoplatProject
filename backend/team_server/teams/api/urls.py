@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import TeamViewSet, AccountTeamAPIView, TeamValidateAPIView
+from .views import TeamViewSet, AccountTeamAPIView, TeamValidateAPIView, TeamListAPIView, TeamCreateAPIView
 
 # Create a router for the CourseViewSet
 router = DefaultRouter()
@@ -15,4 +15,6 @@ urlpatterns = [
     path('account/profile/teams/', AccountTeamAPIView.as_view(), name='teams-by-account'),
     
     path('team/validate/', TeamValidateAPIView.as_view(), name='team-validate'),
+    path('public/team/list/', TeamListAPIView.as_view(), name='team-list'),
+    path('public/team/create/', TeamCreateAPIView.as_view(), name='team-create'),
 ]

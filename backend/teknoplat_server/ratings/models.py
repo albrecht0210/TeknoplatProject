@@ -15,4 +15,4 @@ class Rating(models.Model):
     criteria = models.ForeignKey('criteria.Criteria', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Rating: {self.account} on {self.pitch.name}'
+        return f'Rating: {self.account} on {self.pitch.name} in {self.meeting.name} ({self.criteria.name})'

@@ -8,6 +8,9 @@ class AccountViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
     permission_classes = (permissions.IsAuthenticated, IsAdminOrReadOnly, )
     
+class AccountRegisterAPIView(generics.CreateAPIView):
+    serializer_class = AccountSerializer
+
 class AccountProfileAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer

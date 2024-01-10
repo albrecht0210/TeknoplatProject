@@ -46,8 +46,9 @@ class MeetingRatingOverallAPIView(views.APIView):
 
         response_data = []
 
+
         for pitch in pitches:
-            pitch_data = PitchSerializer(pitch).data
+            pitch_data = PitchSerializer(pitch, context={ 'request': request }).data
             ratings = Rating.objects.filter(pitch=pitch_data['id'], meeting=meeting_param)
 
             if not ratings.exists():
@@ -61,7 +62,7 @@ class MeetingRatingOverallAPIView(views.APIView):
             criteria = []
 
             for rating in ratings:
-                meeting_criteria = meeting.criterias.all().filter(criteria=rating.criteria)
+                meeting_criteria = meeting.criterias.all().get(criteria=rating.criteria)
 
                 if current_account != rating.account:
                     data.append({'account': account, 'criteria': criteria, 'total': total_score})
