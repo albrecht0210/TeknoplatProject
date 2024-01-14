@@ -6,9 +6,7 @@ import { useLoaderData, useNavigate } from "react-router-dom";
 const AccountButton = () => {
     const navigate = useNavigate();
     let { profile } = useLoaderData();
-
-    localStorage.setItem("account", profile.id);
-
+    
     const stringAvatar = (name) => {
         const nameSplit = name.split(' ');
         return {

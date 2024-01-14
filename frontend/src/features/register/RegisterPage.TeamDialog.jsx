@@ -28,7 +28,6 @@ const RegisterPageTeamDialog = (props) => {
         }
         setLoading(true);
         const newTeamResponse = await createTeam(payload);
-        console.log(newTeamResponse.data);
         updateTeamMenu(newTeamResponse.data);
         handleClose();
     }

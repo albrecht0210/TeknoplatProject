@@ -16,6 +16,8 @@ export async function loader({ request, params }) {
     try {
         const profileResponse = await fetchProfileApi();
         const coursesResponse = fetchAccountCourses();
+        localStorage.setItem("account", profileResponse.data.id);
+        
         return defer({
             profile: profileResponse.data,
             courses: coursesResponse

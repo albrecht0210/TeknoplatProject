@@ -5,7 +5,7 @@ import { List, ListItem, ListItemButton, ListItemText, ListSubheader, Paper } fr
 
 function VideoPageVideoViewParticipantPanel() {
     const { participants } = useMeeting();
-    const {meeting, course} = useLoaderData();
+    const {meeting, profile, course} = useLoaderData();
 
     const inMeeting = [...participants.keys()].map((participant) => course.members.find((member) => member.id === participant));
     const notInMeeting = course.members.filter((member) => !inMeeting.find((meetingMember) => member.id === meetingMember.id));
@@ -38,16 +38,31 @@ function VideoPageVideoViewParticipantPanel() {
                 </ListSubheader>
                 {inMeeting.filter((member) => member.role === "Teacher").map((teacher) => {
                     if (meeting.owner === teacher.id) {
-                        return <VideoPageVideoViewParticipantPanelParticipant key={teacher.id} participant={teacher} isNotHost={false} />
+                        return <VideoPageVideoViewParticipantPanelParticipant 
+                                    key={teacher.id} 
+                                    participant={teacher} 
+                                    isNotHost={false} 
+                                    isOwner={profile.id === meeting.owner}
+                                />
                     } else {
-                        return <VideoPageVideoViewParticipantPanelParticipant key={teacher.id} participant={teacher} isNotHost={true} />
+                        return <VideoPageVideoViewParticipantPanelParticipant 
+                                    key={teacher.id} 
+                                    participant={teacher} 
+                                    isNotHost={true} 
+                                    isOwner={profile.id === meeting.owner}
+                                />
                     }
                 })}
                 <ListSubheader sx={{ backgroundColor: "inherit" }}>
                     Students
                 </ListSubheader>
                 {inMeeting.filter((member) => member.role === "Student").map((student) => (
-                    <VideoPageVideoViewParticipantPanelParticipant key={student.id} participant={student} isNotHost={true} />
+                    <VideoPageVideoViewParticipantPanelParticipant 
+                        key={student.id} 
+                        participant={student} 
+                        isNotHost={true} 
+                        isOwner={profile.id === meeting.owner}
+                    />
                 ))}
                 <ListSubheader sx={{ backgroundColor: "inherit" }}>
                     Not In Meeting

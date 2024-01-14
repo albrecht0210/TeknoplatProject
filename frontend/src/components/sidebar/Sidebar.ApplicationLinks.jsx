@@ -18,7 +18,7 @@ const ApplicationLinks = () => {
     }
 
     const handleValidationClick = () => {
-        navigate("chatbot/");
+        navigate("/idea_validation/");
     }
 
     return (

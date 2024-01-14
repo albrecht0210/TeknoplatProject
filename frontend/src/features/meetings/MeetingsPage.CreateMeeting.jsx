@@ -10,9 +10,10 @@ const Transition = forwardRef(function Transition(props, ref) {
 });
 
 const MeetingsPageCreateMeeting = (props) => {
-    const { profile, open, handleClose } = props;
+    const { profile, open, handleClose, course, status, updateMeeting } = props;
     const [pitchesReponses, criteriasResponse] = useAsyncValue();
-
+    const closeButtonRef = useRef(null);
+    
     const pitches = pitchesReponses.data;
     const criterias = criteriasResponse.data;
 
@@ -173,7 +174,9 @@ const MeetingsPageCreateMeeting = (props) => {
         const activity_data = {
             name: name,
             description: description,
-            account: profile.id
+            account: profile.id,
+            course_code: course.code,
+            course_section: course.section
         };
         const meeting_update_data = {
             teacher_weight_score: Number(teacher_weight_score) / 100,
@@ -183,7 +186,7 @@ const MeetingsPageCreateMeeting = (props) => {
             return { presentor: pitches[index].id };
         });
         const meeting_criterias_data = formCriterias.filter((form) => form.criteria === true).map((form, index) => {
-            return { criteria: criterias[index], weight: form.weight };
+            return { criteria: criterias[index].id, weight: Number(form.weight) / 100 };
         });
 
         const activityResponse = await addNewActivity(activity_data);
@@ -200,10 +203,11 @@ const MeetingsPageCreateMeeting = (props) => {
             await addMeetingCriteria(meeting.id, criteria);
         });
 
-        setTimeout(() => {
-            handleDialogClose();
-            setLoading(false);
-        }, 1000);    
+        if (status === "pending") {
+            updateMeeting({id: meetingResponse.data.id, name: name, teacher_weight_score: teacher_weight_score, student_weight_score: student_weight_score});
+        }
+        setLoading(false);
+        closeButtonRef.current.click();
     }
 
     return (
@@ -211,6 +215,7 @@ const MeetingsPageCreateMeeting = (props) => {
             <AppBar sx={{ position: 'relative' }}>
                 <Toolbar>
                     <IconButton
+                        ref={closeButtonRef}
                         edge="start"
                         color="inherit"
                         onClick={handleDialogClose}

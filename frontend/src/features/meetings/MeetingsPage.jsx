@@ -30,9 +30,12 @@ export const Component = () => {
         { value: 2, name: "Completed", stringValue: "completed" }
     ];
 
+    tabOptions.push(profile.role === "Teacher" ? { value: 3, name: "Teams", stringValue: "team" } : { value: 3, name: "My Team", stringValue: "my_team" })
+
     const [meetingsPageTabValue, setMeetingsPageTabValue] = useState(Number(localStorage.getItem("meetingsPageTabValue")) ?? 1);
     const [searchMeeting, setSearchMeeting] = useState("");
     const [openCreateDialog, setOpenCreateDialog] = useState(false);
+    const [newMeeting, setNewMeeting] = useState([]);
 
     const handleCloseCreateDialog = () => {
         setOpenCreateDialog(false);
@@ -51,6 +54,11 @@ export const Component = () => {
         setSearchMeeting(event.target.value);
     }
 
+    const handleNewMeeting = (meeting) => {
+        const meetings = [...newMeeting, meeting];
+        setNewMeeting(meetings);
+    }
+
     return (
         <Box p={3}>
             <Suspense fallback={<Box />}>
@@ -62,8 +70,6 @@ export const Component = () => {
                                     {tabOptions.map((option) => (
                                         <Tab key={option.value} id={`status-option-${option.value}`} label={option.name} aria-controls={`status-tabpanel-${option.value}`} />
                                     ))}
-                                    {profile.role === "Student" && <Tab id={`status-option-3`} label="My Team" aria-controls={`status-tabpanel-3`} />}
-                                    {profile.role === "Teacher" && <Tab id={`status-option-3`} label="Teams" aria-controls={`status-tabpanel-3`} />}
                                 </Tabs> 
                                 <Stack direction="row" spacing={2} alignItems="center" ml="auto">
                                     {profile.role === "Teacher" && <Button size="small" variant="outlined" onClick={handleOpenCreateDialog}>Create</Button>}
@@ -79,10 +85,19 @@ export const Component = () => {
                                     />
                                 </Stack>
                                 {profile.role === "Teacher" && (
-                                    <Suspense fallback={<Box sx={{ display: "none" }} />}>
+                                    <Suspense fallback={<Box sx={{ display: "none" }} />}> 
+                                    {openCreateDialog && (
                                         <Await resolve={Promise.all([pitches, criterias]).then(value => value)}>
-                                            <MeetingsPageCreateMeeting open={openCreateDialog} handleClose={handleCloseCreateDialog} profile={profile} />
+                                            <MeetingsPageCreateMeeting 
+                                                open={openCreateDialog} 
+                                                handleClose={handleCloseCreateDialog} 
+                                                profile={profile} 
+                                                course={resolveCourses.data.find((course) => course.id === courseId)} 
+                                                updateMeeting={handleNewMeeting} 
+                                                status={tabOptions.find((option) => option.value === meetingsPageTabValue).stringValue}
+                                            />
                                         </Await>
+                                    )}
                                     </Suspense>
                                 )}
                             </Stack>
@@ -90,7 +105,7 @@ export const Component = () => {
                     )}
                 </Await>
             </Suspense>
-            {meetingsPageTabValue === 0 && <MeetingsPageTable search={searchMeeting} status={tabOptions.find((option) => option.value === meetingsPageTabValue).stringValue} />}
+            {meetingsPageTabValue === 0 && <MeetingsPageTable search={searchMeeting} status={tabOptions.find((option) => option.value === meetingsPageTabValue).stringValue} addMeetings={newMeeting} />}
             {meetingsPageTabValue === 1 && <MeetingsPageTable search={searchMeeting} status={tabOptions.find((option) => option.value === meetingsPageTabValue).stringValue} />}
             {meetingsPageTabValue === 2 && <MeetingsPageTable search={searchMeeting} status={tabOptions.find((option) => option.value === meetingsPageTabValue).stringValue} />}
             {meetingsPageTabValue === 3 && <MeetingsPageTeam />}

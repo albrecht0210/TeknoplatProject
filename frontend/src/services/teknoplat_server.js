@@ -5,7 +5,7 @@ import { generateAccessTokenApi } from './wildcat_server';
 
 const instance = axios.create({
     baseURL: process.env.REACT_APP_TEKNOPLAT_BASE_URL,
-    timeout: 5000, 
+    // timeout: 18000, 
     headers: {
         'Content-Type': 'application/json',
     },
@@ -33,7 +33,7 @@ instance.interceptors.response.use(
     async error => {
         const originalRequest = error.config;
 
-        if (error.response.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             
             try {
@@ -62,6 +62,16 @@ export const fetchProfileApi = async () => {
 
 export const authenticateVideoSDKApi = async () => {
     const response = await instance.post("/api/video/authenticate/", null);
+    return response;
+}
+
+export const createPitch = async (payload) => {
+    const response = await instance.post(`/api/pitches/`, payload);
+    return response;
+}
+
+export const updatePitch = async (payload, pitchId) => {
+    const response = await instance.put(`/api/pitches/${pitchId}/`, payload);
     return response;
 }
 
@@ -108,7 +118,7 @@ export const addMeetingCriteria = async (meetingId, payload) => {
         criteria: payload.criteria,
         weight: payload.weight
     }
-    const response = await instance.post(`/api/meetings/${meetingId}/add_meeting_presentor/`, data);
+    const response = await instance.post(`/api/meetings/${meetingId}/add_meeting_criteria/`, data);
     return response;
 }
 
@@ -131,23 +141,25 @@ export const fetchMeetingById = async (meetingId) => {
     return response;
 }
 
-export const updateMeetingStatusAndVideoId = async (meeting, videoId) => {
+export const updateMeetingStatusAndVideoId = async (meeting, videoId, status) => {
     const data = {
         ...meeting,
-        status: "in_progress",
-        video: videoId.meetingId
+        status: status,
+        video: videoId?.meetingId ?? null
     };
     const response = await instance.put(`/api/meetings/${meeting.id}/`, data);
     return response;
 }
 
-export const fetchAccountRatings = async (meetingId) => {
-    const response = await instance.get(`/api/account/ratings/?meeting=${meetingId}`);
+export const fetchAccountRatings = async (meetingId, pitchId) => {
+    const response = await instance.get(`/api/account/ratings/?meeting=${meetingId}&pitch=${pitchId}`);
+    // const response = await instance.get(`/api/account/ratings/?meeting=${meetingId}`);
     return response;
 }
 
-export const fetchAccountRemarks = async (meetingId) => {
-    const response = await instance.get(`/api/account/remarks/?meeting=${meetingId}`);
+export const fetchAccountRemarks = async (meetingId, pitchId) => {
+    const response = await instance.get(`/api/account/remarks/?meeting=${meetingId}&pitch=${pitchId}`);
+    // const response = await instance.get(`/api/account/remarks/?meeting=${meetingId}`);
     return response;
 }
 
@@ -161,11 +173,10 @@ export const fetchMeetingFeedbacks = async (meetingId) => {
     return response;
 }
 
-export const updateOpenPitchRate = async (pitch) => {
+export const updatePitchRate = async (pitch, status) => {
     const data = {
         ...pitch,
-        team: pitch.team.id,
-        open_rate: true
+        open_rate: status
     }
 
     const response = await instance.put(`/api/pitches/${pitch.id}/`, data);
@@ -173,27 +184,22 @@ export const updateOpenPitchRate = async (pitch) => {
 }
 
 export const addPitchRating = async (payload) => {
-    const data = {
-        rating: payload.rating,
-        account: payload.account,
-        pitch: payload.pitch,
-        meeting: payload.meeting,
-        criteria: payload.criteria,
-    }
+    const response = await instance.post(`/api/ratings/`, payload);
+    return response;
+}
 
-    const response = await instance.post(`/api/ratings/`, data);
+export const updatePitchRating = async (payload) => {
+    const response = await instance.put(`/api/ratings/${payload.id}/`, payload);
     return response;
 }
 
 export const addPitchFeedback = async (payload) => {
-    const data = {
-        remark: payload.remark,
-        account: payload.account,
-        pitch: payload.pitch,
-        meeting: payload.meeting,
-    }
+    const response = await instance.post(`/api/remarks/`, payload);
+    return response;
+}
 
-    const response = await instance.post(`/api/remarks/`, data);
+export const updatePitchFeedback = async (payload) => {
+    const response = await instance.put(`/api/remarks/${payload.id}/`, payload);
     return response;
 }
 
@@ -223,13 +229,33 @@ export const fetchChatbotThread = async (account) => {
     return response;
 }
 
+export const initiateChatbotThread = async (account) => {
+    const data = {
+        'account': account
+    }
+    const response = await instance.post(`/api/chatbots/`, data);
+    return response; 
+}
+
 export const addNewChatToChatbot = async (chatbotId, payload) => {
     const data = {
         chatbot: chatbotId,
         role: "user",
-        content: payload.content
+        content: payload.content,
+        leniency: payload.leniency,
+        generality: payload.generality,
+        optimism: payload.optimism,
     }
     const response = await instance.post(`/api/chatbots/${chatbotId}/add_new_content/`, data);
+    return response;
+}
+
+export const addFeedbackSummary = async (payload) => {
+    const data = {
+        pitch: payload.pitch,
+        meeting: payload.meeting
+    }
+    const response = await instance.post(`/api/feedbacks/`, data);
     return response;
 }
 

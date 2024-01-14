@@ -3,10 +3,8 @@ import { fetchMeetingsByCourseAndStatus } from "../../services/teknoplat_server"
 import { useNavigate, useParams } from "react-router-dom";
 import { Box, Button, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow } from "@mui/material";
 
-
-
 const MeetingsPageTable = (props) => {
-    const { search, status } = props;
+    const { search, status, addMeetings } = props;
     const { courseId } = useParams();
     const navigate = useNavigate();
 
@@ -25,6 +23,12 @@ const MeetingsPageTable = (props) => {
 
         }
     }
+    
+    useEffect(() => {
+        setLoading(true);
+        getMeetings();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [addMeetings]);
 
     useEffect(() => {
         getMeetings();

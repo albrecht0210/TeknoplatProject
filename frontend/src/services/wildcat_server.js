@@ -64,4 +64,19 @@ export const generateAccessTokenApi = async (credentials) => {
     return response;
 }
 
+export const registerAccountApi = async (payload) => {
+    const response = await axios.post(`${process.env.REACT_APP_WILDCAT_BASE_URL}/api/account/register/`, payload);
+    return response;
+}
+
+export const registerAccountToTeamApi = async (credentials) => {
+    const response = await axios.post(`${process.env.REACT_APP_WILDCAT_BASE_URL}/api/token/?service=${process.env.REACT_APP_TEAM_SERVICE_TOKEN}`, credentials);
+    return response;
+}
+
+export const registerAccountToActivityApi = async (credentials) => {
+    const response = await axios.post(`${process.env.REACT_APP_WILDCAT_BASE_URL}/api/token/?service=${process.env.REACT_APP_ACTIVITY_SERVICE_TOKEN}`, credentials);
+    return response;
+}
+
 export default instance;

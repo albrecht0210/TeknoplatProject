@@ -1,29 +1,38 @@
 import { CallEnd, EditNote, Mic, MicOff, PeopleAlt, VideoChat, Videocam, VideocamOff } from "@mui/icons-material";
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Paper, Stack, Tooltip } from "@mui/material";
 import { useMeeting } from "@videosdk.live/react-sdk";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
+import { addFeedbackSummary, updateMeetingStatusAndVideoId, updatePitchRate } from "../../services/teknoplat_server";
 
 const TeacherControls = ({ owner }) => {
     const navigate = useNavigate();
+    const { meeting } = useLoaderData();  
 
-    // const onParticipantLeft = (participantId) => {
-    //     console.log(owner === participantId);
-    //     if (owner === participantId) {
-    //         navigate("/redirects");
-    //     }
-    // }
+    const onParticipantLeft = (participantId) => {
+        if (owner === participantId) {
+            navigate("leave");
+        }
+    }
 
-    // const onMeetingLeft = () => {
-    //     console.log("before navigate");
-    //     // navigate("/redirects", { state: { redirect: true } });
-    //     // navigate("/");
-    //     console.log("after navigate");
-    // }
+    const onMeetingLeft = () => {
+        navigate("leave");
+    }
 
-    const { toggleMic, toggleWebcam, localMicOn, localWebcamOn, leave, end } = useMeeting();
-
+    const { toggleMic, toggleWebcam, localMicOn, localWebcamOn, leave, end } = useMeeting({
+        onParticipantLeft,
+        onMeetingLeft,
+    });
+    
     const [open, setOpen] = useState(false);
+    const [isEnding, setIsEnding] = useState("not leaving");
+
+    useEffect(() => {
+        if (isEnding === "ending") {
+            end();
+        }
+        // eslint-disable-next-line
+    }, [isEnding]);
 
     const handleToggleMic = () => {
         toggleMic();
@@ -41,17 +50,26 @@ const TeacherControls = ({ owner }) => {
         setOpen(false);
     }
 
-    const handleEnd = () => {
-        setOpen(false);
+    const handleEnd = async () => {
+        setIsEnding("saving");
+        await meeting.presentors.forEach( async (pitch) => {
+            await addFeedbackSummary({ meeting: meeting.id, pitch: pitch.id });
+            await updatePitchRate(pitch, false);
+        });
+
+        await updateMeetingStatusAndVideoId(meeting, null, "completed");
+
+        
         if (localMicOn) {
             toggleMic();
         }
         if (localWebcamOn) {
             toggleWebcam();
         }
-        end();
-        navigate("leave");
-        // navigate(0);
+        setTimeout(() => {
+            setOpen(false);
+            setIsEnding("ending");
+        }, 8000);
     }
 
     const handleLeave = () => {
@@ -63,8 +81,6 @@ const TeacherControls = ({ owner }) => {
             toggleWebcam();
         }
         leave();
-        navigate("leave");
-        // navigate(0);
     }
 
     return (
@@ -132,8 +148,8 @@ const TeacherControls = ({ owner }) => {
                 <DialogTitle>Leaving or Ending call?</DialogTitle>
                 <DialogContent>
                     <Stack direction="row" spacing={3}>
-                        <Button variant="outlined" color="error" onClick={handleLeave}>Leave Call</Button> 
-                        <Button variant="contained" color="error" onClick={handleEnd}>End Call</Button> 
+                        <Button variant="outlined" color="error" onClick={handleLeave} disabled={isEnding === "saving"}>Leave Call</Button> 
+                        <Button variant="contained" color="error" onClick={handleEnd} disabled={isEnding === "saving"}>{isEnding === "saving" ? "Saving Data" : "End Call"}</Button> 
                     </Stack>
                 </DialogContent>
             </Dialog>
@@ -142,12 +158,25 @@ const TeacherControls = ({ owner }) => {
 }
 
 const StudentControls = ({ profileId }) => {
-    
+    const navigate = useNavigate();
+
+    const onMeetingLeft = () => {
+        navigate("leave");
+    }
+
+    const { leave } = useMeeting({
+        onMeetingLeft,
+    });
+
+    const handleLeave = () => {
+        leave();
+    }
+
     return (
         <Box>
             <Tooltip title="Leave Call">
                 <IconButton 
-                    // onClick={handleLeave} 
+                    onClick={handleLeave} 
                     aria-label="leaveCall" 
                     sx={{ 
                         backgroundColor: "#ff4313", 
@@ -215,15 +244,6 @@ const VideoPageVideoViewControls = (props) => {
                     </Tooltip>
                 </Stack>
             </Box>
-            {/* <Dialog open={openDialog} onClose={handleCloseDialog}>
-                <DialogTitle>Leaving or Ending call?</DialogTitle>
-                <DialogContent>
-                    <Stack direction="row" spacing={3}>
-                        <Button variant="outlined" color="error" onClick={handleLeave}>Leave Call</Button> 
-                        <Button variant="contained" color="error" onClick={handleEnd}>End Call</Button> 
-                    </Stack>
-                </DialogContent>
-            </Dialog> */}
         </Paper>
     );
 }

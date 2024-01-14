@@ -3,9 +3,9 @@ import { useState } from "react";
 
 const ChatbotPageSetting = () => {
     const [slider, setSlider] = useState({
-        general_specific: localStorage.getItem("general_specific") ? localStorage.getItem("general_specific") : 0.5,
-        lenient_harsh: localStorage.getItem("lenient_harsh") ? localStorage.getItem("lenient_harsh") : 0.5,
-        optimistic_pessimistic: localStorage.getItem("optimistic_pessimistic") ? localStorage.getItem("optimistic_pessimistic") : 0.5
+        general_specific: localStorage.getItem("general_specific") ? Number(localStorage.getItem("general_specific")) : 0.5,
+        lenient_harsh: localStorage.getItem("lenient_harsh") ? Number(localStorage.getItem("lenient_harsh")) : 0.5,
+        optimistic_pessimistic: localStorage.getItem("optimistic_pessimistic") ? Number(localStorage.getItem("optimistic_pessimistic")) : 0.5
     });
 
     const handleSliderChange = (e) => {

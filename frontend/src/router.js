@@ -58,6 +58,24 @@ const UrlPaths = () => {
                         </Breadcrumbs>
                     )}} 
                 />
+                <Route
+                    path="idea_validation/"
+                    lazy={() => import("./features/chatbot/ChatbotPage")}
+                    handle={{ crumb: (path) => (
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <Typography color="text.primary">Idea Validation</Typography>
+                        </Breadcrumbs>
+                    )}} 
+                />
+                <Route 
+                    path="profile/" 
+                    lazy={() => import("./features/profile/ProfilePage")}
+                    handle={{ crumb: (path) => (
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <Typography color="text.primary">Profile</Typography>
+                        </Breadcrumbs>
+                    )}} 
+                />
             </Route>
             <Route path="live/:meetingId/" lazy={() => import("./features/video/VideoPage")} />
             <Route path="live/:meetingId/leave/" lazy={() => import("./features/redirects/Redirects")} />

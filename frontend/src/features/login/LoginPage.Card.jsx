@@ -39,10 +39,6 @@ const LoginPageCard = (props) => {
         }
     }
 
-    const handleGuestClick = () => {
-
-    }
-
     const handleRegisterClick = () => {
         navigate("/register");
     }
@@ -103,12 +99,12 @@ const LoginPageCard = (props) => {
                             </Button>
                             <Button ref={submitButtonRef} type="submit" sx={{ display: "none" }} />
                         </Grid>
-                        <Grid item md={6} sm={12} xs={12}>
+                        <Grid item md={12} sm={12} xs={12}>
                             <Button fullWidth variant="outlined" onClick={handleRegisterClick}>Register</Button>
                         </Grid>
-                        <Grid item md={6} sm={12} xs={12}>
+                        {/* <Grid item md={6} sm={12} xs={12}>
                             <Button fullWidth variant="outlined" onClick={handleGuestClick}>Login as Guest</Button>
-                        </Grid>
+                        </Grid> */}
                     </Grid>
                 </Form>
             </CardContent>

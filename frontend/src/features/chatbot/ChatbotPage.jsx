@@ -1,35 +1,25 @@
 import { useState } from "react";
 import ChatbotPageThread from "./ChatbotPage.Thread";
 import ChatbotPageSetting from "./ChatbotPage.Setting";
-import { addNewChatToChatbot, fetchChatbotThread } from "../../services/teknoplat_server";
-import { Box } from "@mui/material";
-import TabContainer from "../../components/tabcontainer/TabContainer";
+import { fetchChatbotThread, initiateChatbotThread } from "../../services/teknoplat_server";
+import { Box, Divider, Tab, Tabs } from "@mui/material";
 
 export async function loader({ request, params }) {
     const account = localStorage.getItem("account");
     
     try {
-        const chatbotResponse = await fetchChatbotThread(account);
+        let chatbotResponse = await fetchChatbotThread(account);
+        console.log(chatbotResponse.data);
+        if (chatbotResponse.data.length === 0) {
+            chatbotResponse = await initiateChatbotThread(account);
+        }
         return { chatbot: chatbotResponse.data[0] };
     } catch (error) {
         return error.response.data;
     }
 }
 
-export async function action({ request, params }) {
-    const formData = await request.formData();
-    const chat = formData.get("chat");
-    const chatbot = formData.get("chatbot");
-
-    try {
-        const chatResponse = await addNewChatToChatbot(chatbot, { content: chat });
-        return chatResponse.data;
-    } catch(error) {
-        return error.response.data;
-    }
-}
-
-export const ChatbotPage = () => {
+export const Component = () => {
     const tabOptions = [
         { value: 0, name: "Chatbot"},
         { value: 1, name: "Settings" },
@@ -55,3 +45,4 @@ export const ChatbotPage = () => {
     );
 }
 
+Component.displayName = "ChatbotPage"

@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Paper, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { useState } from "react";
 import {
     Chart as ChartJS,
@@ -111,6 +111,7 @@ const MeetingDetailsPageHistoryDialog = (props) => {
                         <Tab key={option.value} id={`option-${option.value}`} label={option.name} aria-controls={`tabpanel-${option.value}`} />
                     ))}
                 </Tabs> 
+                <Divider />
                 {dialogTabValue === 0 && <OverallView pitches={pitches} />}
                 {dialogTabValue !== 0 && <PitchView profile={profile} pitch={pitches[dialogTabValue - 1]} feedback={feedbacks.find((feedback) => feedback.pitch === pitches[dialogTabValue - 1].id)} />}
             </DialogContent>

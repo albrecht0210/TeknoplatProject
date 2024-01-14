@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { MeetingProvider } from "@videosdk.live/react-sdk";
-import { fetchAccountRatings, fetchAccountRemarks, fetchMeetingById, fetchProfileApi } from "../../services/teknoplat_server";
+import { fetchMeetingById, fetchProfileApi } from "../../services/teknoplat_server";
 import { redirect, useLoaderData } from "react-router-dom";
 import Cookies from "js-cookie";
 import { fetchCourseById } from "../../services/team_server";
@@ -13,8 +13,8 @@ export async function loader({ request, params }) {
         const profileResponse = await fetchProfileApi();
         const courseResponse = await fetchCourseById(meetingResponse.data.course);
 
-        const ratingResponse = await fetchAccountRatings(meetingId);
-        const remarksResponse = await fetchAccountRemarks(meetingId);
+        // const ratingResponse = await fetchAccountRatings(meetingId);
+        // const remarksResponse = await fetchAccountRemarks(meetingId);
 
         if (meetingResponse.data.status === "pending" || meetingResponse.data.status === "completed") {
             return redirect("/");
@@ -24,8 +24,8 @@ export async function loader({ request, params }) {
             meeting: meetingResponse.data,
             profile: profileResponse.data,
             course: courseResponse.data,
-            ratings: ratingResponse.data,
-            remarks: remarksResponse.data,
+            // ratings: ratingResponse.data,
+            // remarks: remarksResponse.data,
             videoAccessToken: Cookies.get("videoAccessToken")
         }
     } catch (error) {

@@ -90,4 +90,14 @@ export const createTeam = async (payload) => {
     return response;
 }
 
+export const addCourseMember = async (payload) => {
+    const response = await axios.post(`${process.env.REACT_APP_TEAM_BASE_URL}/api/public/course/add_member/`, payload);
+    return response;
+}
+
+export const addTeamMember = async (payload) => {
+    const response = await axios.post(`${process.env.REACT_APP_TEAM_BASE_URL}/api/public/team/add_member/`, payload);
+    return response;
+}
+
 export default instance;

@@ -1,12 +1,12 @@
 import { Button, Paper, Stack, Typography } from "@mui/material";
-import { updateOpenPitchRate } from "../../services/teknoplat_server";
+import { updatePitchRate } from "../../services/teknoplat_server";
 
 const VideoPageVideoViewRatePanelPresentor = (props) => {
     const { socket, pitch, isMember=false, isStudent, handleOpen } = props;
 
     const handleOpenRateClick = async () => {
         try {
-            await updateOpenPitchRate(pitch);
+            await updatePitchRate(pitch, true);
             socket.send(JSON.stringify({
                 'pitch': pitch.id
             }));

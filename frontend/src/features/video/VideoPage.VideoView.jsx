@@ -38,6 +38,8 @@ function VideoPageVideoView() {
         setOptionTabValue(index);
     }
 
+    
+
     return (
         <Box height="100vh" p={3}>
             <Stack height="calc(100vh - 72px - 48px)" direction="row" spacing={2} justifyContent="space-between" sx={{ pb: 3 }}>
@@ -71,7 +73,6 @@ function VideoPageVideoView() {
                 // chat={{ onVideoChat, handleToggleVideoChat }} 
                 // handleToggleCollapse={handleToggleCollapse}
             />
-            {/* <RateDialog open={openRateDialog} handleClose={handleDialogClose} meeting={meeting} /> */}
         </Box>
     );
 }

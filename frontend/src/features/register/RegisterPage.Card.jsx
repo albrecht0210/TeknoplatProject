@@ -14,6 +14,7 @@ const RegisterPageCard = (props) => {
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
+        email: "",
         username: "",
         password: "",
         course: "",
@@ -39,7 +40,6 @@ const RegisterPageCard = (props) => {
 
         if (name === "course") {
             const teamsResponse = await fetchTeamsByCoursePublic(value);
-            console.log(teamsResponse);
             setTeamsMenu(teamsResponse.data);
             setFormData((previousFormData) => ({
                 ...previousFormData,
@@ -67,8 +67,11 @@ const RegisterPageCard = (props) => {
             setFormData({
                 firstName: "",
                 lastName: "",
+                email: "",
                 username: "",
                 password: "",
+                course: "",
+                team: ""
             });
             navigate("/login");
         }, 1500);
@@ -115,6 +118,19 @@ const RegisterPageCard = (props) => {
                                 label="Last Name"
                                 type="text"
                                 value={formData.lastName}
+                                onChange={handleInputChange}
+                                onKeyDown={handleInputKeyDown}
+                                disabled={loading}
+                                fullWidth
+                                variant="outlined"
+                            />
+                        </Grid>
+                        <Grid item md={12} sm={12} xs={12}>
+                            <TextField
+                                name="email"
+                                label="Email"
+                                type="email"
+                                value={formData.email}
                                 onChange={handleInputChange}
                                 onKeyDown={handleInputKeyDown}
                                 disabled={loading}
@@ -196,19 +212,19 @@ const RegisterPageCard = (props) => {
                             <Button
                                 variant="contained"
                                 fullWidth
-                                // disabled={loading}
-                                // onClick={handleLoginClick}
+                                disabled={loading}
+                                onClick={handleRegisterClick}
                             >
                                 { loading ? "Making Account..." : "Register" }
                             </Button>
                             <Button ref={submitButtonRef} type="submit" sx={{ display: "none" }} />
                         </Grid>
-                        <Grid item md={6} sm={12} xs={12}>
+                        <Grid item md={12} sm={12} xs={12}>
                             <Button fullWidth variant="outlined" onClick={handleLoginClick}>Login</Button>
                         </Grid>
-                        <Grid item md={6} sm={12} xs={12}>
+                        {/* <Grid item md={6} sm={12} xs={12}>
                             <Button fullWidth variant="outlined">Login as Guest</Button>
-                        </Grid>
+                        </Grid> */}
                     </Grid>
                 </Form>
                 <RegisterPageTeamDialog open={openTeamDialog} handleClose={handleCloseTeamDialog} course={formData.course} updateTeamMenu={addTeamToMenu} />

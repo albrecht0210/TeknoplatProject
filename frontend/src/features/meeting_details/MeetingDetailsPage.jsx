@@ -32,8 +32,8 @@ export async function action({ request, params }) {
         try {
             const meetingResponse = await fetchMeetingById(params.meetingId);
             const videoResponse = await generateVideoId(Cookies.get("videoAccessToken"));
-            await updateMeetingStatusAndVideoId(meetingResponse.data, videoResponse.data);
-            await validateVideoId();
+            await updateMeetingStatusAndVideoId(meetingResponse.data, videoResponse.data, "in_progress");
+            await validateVideoId(Cookies.get("videoAccessToken"), videoResponse.data.meetingId);
             localStorage.setItem("videoId", videoResponse.data.meetingId);
             return redirect(`/live/${params.meetingId}`);
         } catch (error) {

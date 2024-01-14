@@ -1,33 +1,35 @@
-import { ListItem, ListItemButton, ListItemText, Stack } from "@mui/material";
+import { Mic, MicOff, Videocam, VideocamOff } from "@mui/icons-material";
+import { IconButton, ListItem, ListItemButton, ListItemText, Stack } from "@mui/material";
+import { useMeeting, useParticipant } from "@videosdk.live/react-sdk";
 
 function VideoPageVideoViewParticipantPanelParticipant(props) {
-    const { participant, isNotHost } = props;
-    // const { enableWebcam: remoteEnableWebcam, disableWebcam: remoteDisableWebcam, enableMic, disableMic: remoteDisableMic, webcamOn, micOn } = useParticipant(participant.id);
-    // const { enableWebcam: localEnableWebcam, disableWebcam: localDisableWebcam, unmuteMic, muteMic } = useMeeting({
-    //     onWebcamRequested: ({ accept, reject, participantId }) => {
-    //         // callback function to accept the request
-    //         // how to get the webcam option and let user choose
-    //         accept();
-    //     },
-    //     onMicRequested: ({ accept, reject, participantId }) => {
-    //         // callback function to accept the request
-    //         accept();
-    //     },
-    // });
+    const { participant, isNotHost, isOwner } = props;
+    const { enableWebcam: remoteEnableWebcam, disableWebcam: remoteDisableWebcam, enableMic, disableMic: remoteDisableMic, webcamOn, micOn } = useParticipant(participant.id);
+    const { enableWebcam: localEnableWebcam, disableWebcam: localDisableWebcam, unmuteMic, muteMic } = useMeeting({
+        onWebcamRequested: ({ accept, reject, participantId }) => {
+            // callback function to accept the request
+            // how to get the webcam option and let user choose
+            accept();
+        },
+        onMicRequested: ({ accept, reject, participantId }) => {
+            // callback function to accept the request
+            accept();
+        },
+    });
 
-    // function handleToggleParticipantWebCam() {
-    //     if (webcamOn) {
-    //         remoteDisableWebcam();
-    //         setTimeout(() => {
-    //             localEnableWebcam();
-    //         }, 500);
-    //     } else {
-    //         localDisableWebcam();
-    //         setTimeout(() => {
-    //             remoteEnableWebcam();
-    //         }, 500);
-    //     }
-    // }
+    function handleToggleParticipantWebCam() {
+        if (webcamOn) {
+            remoteDisableWebcam();
+            setTimeout(() => {
+                localEnableWebcam();
+            }, 500);
+        } else {
+            localDisableWebcam();
+            setTimeout(() => {
+                remoteEnableWebcam();
+            }, 500);
+        }
+    }
 
     // const handleToggleParticipantMic = () => {
     //     if (micOn) {
@@ -46,14 +48,14 @@ function VideoPageVideoViewParticipantPanelParticipant(props) {
     return (
         <ListItem 
             disablePadding
-            secondaryAction= {isNotHost && (
+            secondaryAction= {isNotHost && isOwner && (
                 <Stack direction="row" spacing={1}>
-                    {/* <IconButton aria-label="toggleMic" onClick={handleToggleParticipantMic}>
+                    <IconButton aria-label="toggleMic">
                         {micOn ? <Mic /> : <MicOff />}
                     </IconButton>
                     <IconButton aria-label="toggleVideo" onClick={handleToggleParticipantWebCam}>
                         {webcamOn ? <Videocam /> : <VideocamOff />}
-                    </IconButton> */}
+                    </IconButton>
                 </Stack>
             )}
         >

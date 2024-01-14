@@ -62,7 +62,9 @@ export const addNewActivity = async (payload) => {
         status: "pending",
         course: localStorage.getItem("course"),
         service: "teknoplat",
-        owner: payload.account
+        owner: payload.account,
+        course_code: payload.course_code,
+        course_section: payload.course_section
     };
 
     const response = await instance.post(`/api/activities/`, data);

@@ -1,35 +1,43 @@
 import { Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { Form, useActionData, useLoaderData, useSubmit } from "react-router-dom";
+import { useLoaderData } from "react-router-dom";
+import { addNewChatToChatbot } from "../../services/teknoplat_server";
 
 function ChatbotPageThread() {
-    const loaderData = useLoaderData();
-    const submit = useSubmit();
-    const actionData = useActionData();
+    const { chatbot } = useLoaderData();
     const scrollableBoxRef = useRef(null);
-
+    console.log(chatbot.messages);
     const [chat, setChat] = useState("");
-    const [chats, setChats] = useState(loaderData.chatbot.messages.filter((chat) => chat.role === "user" || chat.role === "assistant"));
+    const [chats, setChats] = useState(chatbot.messages);
 
     useEffect(() => {
         scrollableBoxRef.current.scrollTop = scrollableBoxRef.current.scrollHeight;
-    }, []);
+    }, [chats]);
 
     const handleChatChange = (e) => {
         const { value } = e.target;
         setChat(value);
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        submit();
-        const newChat = actionData.chat;
-        setChat("");
-        setChats((previous) => ({
+    const handleSend = async (e) => {
+        // const updateChats = {'role': 'user', 'content': chat};
+        setChats((previous) => (([
             ...previous,
-            newChat
-        }));
-        scrollableBoxRef.current.scrollTop = scrollableBoxRef.current.scrollHeight;
+            {role: 'user', content: chat}
+        ])));
+        setChat("");
+        const chatResponse = await addNewChatToChatbot(chatbot.id, { 
+            content: chat, 
+            leniency: localStorage.getItem("lenient_harsh") ?? 0.5,
+            generality: localStorage.getItem("general_specific") ?? 0.5,
+            optimism: localStorage.getItem("optimistic_pessimistic") ?? 0.5,
+        });
+        const newChatData = chatResponse.data;
+        console.log(newChatData)
+        setChats((previous) => (([
+            ...previous,
+            newChatData
+        ])));
     }
 
     return (
@@ -58,24 +66,24 @@ function ChatbotPageThread() {
                     }}
                 >
                     <Stack spacing={2}>
-                        {chats.map((chat, index) => (
-                            <Paper key={index} sx={{ backgroundColor: "black", width: "30%", p: 2, marginLeft: chat.role === "user" ? "auto !important" : "" }}>
+                        {chats.map((ch, index) => (
+                            <Paper key={index} sx={{ backgroundColor: "black", width: "30%", p: 2, marginLeft: ch.role === "user" ? "auto !important" : "" }}>
                                 <Stack spacing={1}>
-                                    <Typography variant="body1" fontSize={14}>{chat.role === "user" ? "You" : "Expert Panelist"}</Typography>
-                                    <Typography variant="body1" fontSize={14}>{chat.content}</Typography>
+                                    <Typography variant="body1" fontSize={14}>{ch.role === "user" ? "You" : "Expert Panelist"}</Typography>
+                                    {ch.content.split("\n").map((str, index) => (
+                                        <Typography key={index} variant="body1" fontSize={14}>{str}</Typography>
+                                    ))}
                                 </Stack>
                             </Paper>
                         ))}
                     </Stack>
                 </Box>
                 <Paper sx={{ position: "absolute", bottom: 0, left: 0, width: "100%", p: 2}}>
-                    <Form method="post" onSubmit={handleSubmit}>
-                        <Stack direction="row" spacing={1}>
-                            <TextField value={chat} name="chat" onChange={handleChatChange} fullWidth size="small" label="Write your pitch..." />
-                            <TextField value={loaderData.chatbot.id} name="chatbot" type="hidden" />
-                            <Button type="submit" size="small" variant="contained">Send</Button>
-                        </Stack>
-                    </Form>
+                    <Stack direction="row" spacing={1}>
+                        <TextField multiline maxRows={8} value={chat} name="chat" onChange={handleChatChange} fullWidth size="small" label="Write your pitch..." />
+                        <TextField value={chatbot?.id} name="chatbot" type="hidden" />
+                        <Button size="small" variant="contained" onClick={handleSend}>Send</Button>
+                    </Stack>
                 </Paper>
             </Paper>
         </Box>
