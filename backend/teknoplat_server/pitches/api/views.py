@@ -53,8 +53,9 @@ class PitchViewSet(viewsets.ModelViewSet):
         elif team.status_code == 500:
             return Response({'error': 'Team Management Server is down.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        print(team_response)
+
         request.data['team'] = team_response['id']
-        request.data['course'] =team_response['course']
 
         serializer = self.get_serializer(data=request.data)
         

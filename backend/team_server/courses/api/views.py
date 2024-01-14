@@ -94,3 +94,33 @@ class CourseValidateAPIView(views.APIView):
 class CourseListAPIView(generics.ListAPIView):
     queryset= Course.objects.all()
     serializer_class = CourseSerializer
+
+class CourseAddMemberAPIView(views.APIView):    
+    def post(self, request):
+        account_id = request.data.get('account')
+        course_id = request.data.get('course')
+        try:
+            course = get_object_or_404(Course, pk=course_id)
+            account = get_object_or_404(Account, pk=account_id)
+
+            course_members = course.members.all()
+            list_account_courses = Course.objects.filter(code=course.code, name=course.name, members__in=[account]).exclude(pk=course.pk)
+
+            if account.is_staff and course_members.filter(is_staff=True).exists():
+                return Response({'error': 'A teacher is already a member of the course.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if list_account_courses.exists() and not account.is_staff:
+                return Response({'error': 'Account has already enrolled in a course with the same name.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if account in course_members:
+                return Response({'message': 'Member already added to the course.'}, status=status.HTTP_200_OK)
+
+            course.members.add(account)
+            course.save()
+
+            return Response(AccountSerializer(account).data, status=status.HTTP_201_CREATED)
+        except Course.DoesNotExist:
+            return Response({'error': 'Course does not exists.'}, status=status.HTTP_404_NOT_FOUND)
+        except Account.DoesNotExist:
+            return Response({'error': 'Account does not exists.'}, status=status.HTTP_404_NOT_FOUND)
+            

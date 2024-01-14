@@ -6,7 +6,7 @@ from comments.api.serializers import CommentSerializer
 class CreateMeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meeting
-        fields = ('name', 'description', 'course', 'status', 'owner')
+        fields = ('id', 'name', 'description', 'course', 'status', 'owner')
 
 class MeetingCriteriaSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(read_only=True)

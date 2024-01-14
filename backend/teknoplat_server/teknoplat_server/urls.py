@@ -28,4 +28,5 @@ urlpatterns = [
     path('api/', include('ratings.api.urls')),
     path('api/', include('remarks.api.urls')),
     path('api/', include('videosdk.api.urls')),
+    path('api/', include('chatbot.api.urls')),
 ]

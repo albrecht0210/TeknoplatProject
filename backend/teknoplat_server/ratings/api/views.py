@@ -20,9 +20,13 @@ class AccountRatingAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         meeting_param = self.request.query_params.get('meeting', None)
+        pitch_param = self.request.query_params.get('pitch', None)
+
         if meeting_param:
             try:
                 queryset = Rating.objects.filter(account=self.request.user.id, meeting=meeting_param)
+                if pitch_param:
+                    queryset = queryset.filter(pitch=pitch_param)
                 return queryset
             except Rating.DoesNotExist:
                 return Response({'error', 'Rating does not exists.'}, status=status.HTTP_404_NOT_FOUND)

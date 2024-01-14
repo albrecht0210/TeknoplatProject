@@ -30,6 +30,9 @@ class MeetingViewSet(viewsets.ModelViewSet):
         status_param = self.request.query_params.get('status', None)
         course_param = self.request.query_params.get('course', None)
 
+        # if (meeting_name_param):
+        #     queryset = queryset.
+
         if course_param:
             queryset = queryset.filter(course=course_param)
 
@@ -54,7 +57,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
             meeting.presentors.add(pitch)
             meeting.save()
 
-            return Response(PitchSerializer(pitch).data, status=status.HTTP_201_CREATED)
+            return Response({'success': 'Pitch is successfully added.'}, status=status.HTTP_201_CREATED)
         except Pitch.DoesNotExist:
             return Response({'error': 'Pitch not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -70,7 +73,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
         if not presentors.exists():
             return Response([], status=status.HTTP_200_OK)
 
-        serializer = PitchSerializer(presentors, many=True)
+        serializer = PitchSerializer(presentors, many=True, context=request)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -86,7 +89,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
         try:
             criteria = Criteria.objects.get(id=criteria_id)
 
-            existing_criteria = MeetingCriteria.objects.filter(meeting=meeting, criteria=criteria.pk)
+            existing_criteria = MeetingCriteria.objects.filter(meeting=meeting, criteria=criteria)
 
             if existing_criteria.exists():
                 return Response({'error': 'Criteria is already added to the meeting'}, status=status.HTTP_400_BAD_REQUEST)
@@ -96,7 +99,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
             meeting.criterias.add(meeting_criteria)
             meeting.save()
 
-            return Response(MeetingCriteriaSerializer(meeting_criteria).data, status=status.HTTP_201_CREATED)
+            return Response({'success': 'Criteria is successfully added.'}, status=status.HTTP_201_CREATED)
         except Criteria.DoesNotExist:
             return Response({'error': 'Criteria not found'}, status=status.HTTP_404_NOT_FOUND)
         

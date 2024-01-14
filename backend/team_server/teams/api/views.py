@@ -132,3 +132,26 @@ class TeamCreateAPIView(generics.CreateAPIView):
             return Response({'error': 'Account not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': 'An error occurred.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class TeamAddMemberAPIView(views.APIView):
+    def post(sef, request):
+        account_id = request.data.get('account')
+        team_id = request.data.get('team')
+
+        try:
+            team = get_object_or_404(Team, pk=team_id)
+            account = get_object_or_404(Account, pk=account_id)
+
+            team_members = team.members.all()
+
+            if len(team_members) == team.max_members:
+                return Response({'error': 'Team is full.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+            team.members.add(account)
+            team.save()
+
+            return Response(AccountSerializer(account).data, status=status.HTTP_201_CREATED)
+        except Team.DoesNotExist:
+            return Response({'error': 'Course does not exists.'}, status=status.HTTP_404_NOT_FOUND)
+        except Account.DoesNotExist:
+            return Response({'error': 'Account does not exists.'}, status=status.HTTP_404_NOT_FOUND)

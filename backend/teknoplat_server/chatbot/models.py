@@ -15,14 +15,11 @@ class Chatbot(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class Chat(models.Model):
-    chatbot = models.ForeignKey(Account, on_delete=models.CASCADE)
+    chatbot = models.ForeignKey(Chatbot, on_delete=models.CASCADE)
     ROLE_CHOICES = (
         ('system', 'System'),
         ('assistant', 'Assistant'),
         ('user', 'User'),
     )
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='synchronous')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     content = models.TextField()
-
-    def __str__(self):
-        return self.content
